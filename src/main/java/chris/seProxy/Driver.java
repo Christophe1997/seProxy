@@ -10,19 +10,27 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.Properties;
 
+/**
+ * Database Driver manager
+ */
 public class Driver {
     private static final String MYSQL_JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String ORACLE_JDBC_DRIVER = "oracle.jdbc.OracleDriver";
     private static final String POSTGRESQL_JDBC_DRIVER = "org.postgresql.Driver";
     private static final String SQLITE_JDBC_DRIVER = "org.sqlite.JDBC";
 
+    /**
+     * A map from database to driver
+     */
     private final HashMap<String, String> driverTable = new HashMap<String, String>() {{
         put("mysql", MYSQL_JDBC_DRIVER);
         put("oracle", ORACLE_JDBC_DRIVER);
         put("postgresql", POSTGRESQL_JDBC_DRIVER);
         put("sqlite", SQLITE_JDBC_DRIVER);
     }};
-
+    /**
+     * Default properties file
+     */
     private static final String CONFIG_FILE = "connection.prop";
 
     @Getter
@@ -34,6 +42,9 @@ public class Driver {
     @Getter
     private String password;
 
+    /**
+     * init driver config from the {@link chris.seProxy.Driver#CONFIG_FILE}
+     */
     public Driver() {
 
         try {
@@ -60,6 +71,10 @@ public class Driver {
         driverTable.put(dbName, dbDriver);
     }
 
+    /**
+     * Connect the database with connection.prop
+     * @return Some Connection or None
+     */
     public Optional<Connection> getConnection() {
         return Optional.ofNullable(driverTable.get(dclass)).map(driver -> {
             try {
