@@ -1,0 +1,4 @@
+DBCLASS=mysql
+DBURL=jdbc:mysql://localhost:3306/dev
+UNAME=root
+PASSWORD=12345

@@ -22,7 +22,8 @@ public class MysqlParserTest {
     }
 
     public static void main(String[] args) throws Exception {
-        CharStream input = CharStreams.fromString("alter table with_check add constraint c2 check (c1 in (1, 2, 3, 4));".toUpperCase());
+        CharStream input = CharStreams.fromString(
+                "select * from product where name = \"asd\"".toUpperCase());
         parser(input);
     }
 }
