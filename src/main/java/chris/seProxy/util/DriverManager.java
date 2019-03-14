@@ -1,19 +1,15 @@
-package chris.seProxy;
+package chris.seProxy.util;
 
 import lombok.Getter;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.Properties;
 
 /**
- * Database Driver manager
+ * Database Driver manager as a wrapper of {@link java.sql.DriverManager}
  */
-public class Driver {
+public class DriverManager {
     private static final String MYSQL_JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String ORACLE_JDBC_DRIVER = "oracle.jdbc.OracleDriver";
     private static final String POSTGRESQL_JDBC_DRIVER = "org.postgresql.Driver";
@@ -28,11 +24,6 @@ public class Driver {
         put("postgresql", POSTGRESQL_JDBC_DRIVER);
         put("sqlite", SQLITE_JDBC_DRIVER);
     }};
-    /**
-     * Default properties file
-     */
-    private static final String CONFIG_FILE = "connection.prop";
-
     @Getter
     private String dclass;
     @Getter
@@ -43,23 +34,13 @@ public class Driver {
     private String password;
 
     /**
-     * init driver config from the {@link chris.seProxy.Driver#CONFIG_FILE}
+     * init driver config from {@link PropManager}
      */
-    public Driver() {
-
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            InputStream propFile = loader.getResourceAsStream(CONFIG_FILE);
-            Properties prop = new Properties();
-            prop.load(propFile);
-            dclass = (String) prop.get("DBCLASS");
-            url = (String) prop.get("DBURL");
-            uname = (String) prop.get("UNAME");
-            password = (String) prop.get("PASSWORD");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public DriverManager(PropManager propManager) {
+        dclass = propManager.getDatabaseClass();
+        url = propManager.getDatabaseUrl();
+        uname = propManager.getDatabaseUsername();
+        password = propManager.getDatabasePassword();
     }
 
     /**
@@ -79,7 +60,7 @@ public class Driver {
         return Optional.ofNullable(driverTable.get(dclass)).map(driver -> {
             try {
                 Class.forName(driver);
-                return DriverManager.getConnection(url, uname, password);
+                return java.sql.DriverManager.getConnection(url, uname, password);
             } catch (Exception ex) {
                 return null;
             }

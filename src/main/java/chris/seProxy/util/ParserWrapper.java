@@ -71,20 +71,20 @@ public class ParserWrapper {
     }
 
     /**
-     * reinit with current input
+     * reset with current input
      * @throws Exception Throws exception from {@link chris.seProxy.util.ParserWrapper#init(CharStream)}
      */
-    public void reinit() throws Exception {
+    public void reset() throws Exception {
         init(this.input);
     }
 
     /**
-     * Change Input and reinit
+     * Change Input and reset
      * @param input input stream
      * @throws Exception Throws exception from {@link chris.seProxy.util.ParserWrapper#init(CharStream)}
      */
     public void setInput(CharStream input) throws Exception {
         this.input = input;
-        reinit();
+        reset();
     }
 }
