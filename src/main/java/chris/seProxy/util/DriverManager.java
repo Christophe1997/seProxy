@@ -34,7 +34,8 @@ public class DriverManager {
     private String password;
 
     /**
-     * init driver config from {@link PropManager}
+     * init driver config from a {@link PropManager}
+     * @param propManager {@link PropManager}
      */
     public DriverManager(PropManager propManager) {
         dclass = propManager.getDatabaseClass();
