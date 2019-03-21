@@ -1,6 +1,7 @@
 package chris.seProxy.util;
 
 import chris.seProxy.exception.ParserInitFailure;
+import chris.seProxy.sql.parser.CaseChangingCharStream;
 import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.*;
@@ -59,9 +60,11 @@ public class ParserWrapper {
      */
     public void init(CharStream input) throws Exception {
 
+
         this.input = input;
+        CaseChangingCharStream upper = new CaseChangingCharStream(input, true);
         try {
-            lexer = lexerClass.getConstructor(CharStream.class).newInstance(input);
+            lexer = lexerClass.getConstructor(CharStream.class).newInstance(upper);
             tokens = new CommonTokenStream(lexer);
             parser = parserClass.getConstructor(TokenStream.class).newInstance(tokens);
         } catch (Exception ex) {
