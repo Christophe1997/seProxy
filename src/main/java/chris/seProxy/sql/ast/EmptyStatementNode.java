@@ -1,6 +1,6 @@
 package chris.seProxy.sql.ast;
 
-public class EmptyStatementNode {
+public class EmptyStatementNode implements AST {
     private static EmptyStatementNode ourInstance = new EmptyStatementNode();
 
     public static EmptyStatementNode getInstance() {
@@ -8,5 +8,10 @@ public class EmptyStatementNode {
     }
 
     private EmptyStatementNode() {
+    }
+
+    @Override
+    public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
     }
 }
