@@ -1,51 +1,49 @@
 package chris.seProxy.rewriter.mysql;
 
-import chris.seProxy.rewriter.RewriteVisitor;
+import chris.seProxy.rewriter.Rewriter;
 import chris.seProxy.security.SecurityScheme;
-import chris.seProxy.sql.ast.Identity;
-import chris.seProxy.sql.ast.sqlStatement.ddlStatement.CreateDatabaseNode;
-import chris.seProxy.sql.ast.sqlStatement.ddlStatement.CreateDatabaseOption;
+import chris.seProxy.sql.parser.mysql.MySqlLexer;
+import chris.seProxy.sql.parser.mysql.MySqlParser;
+import chris.seProxy.sql.parser.mysql.MySqlParserBaseListener;
+import chris.seProxy.util.ParserWrapper;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.Optional;
 
-import static chris.seProxy.sql.ast.sqlStatement.ddlStatement.CreateDatabaseNode.DBFormat.DATABASE;
+@AllArgsConstructor
+public class MysqlRewriter implements Rewriter {
 
-public class MysqlRewriter implements RewriteVisitor {
+    @Getter @Setter
+    private ParserWrapper parserWrapper;
 
-    private SecurityScheme scheme;
+    @Getter @Setter
+    private SecurityScheme securityScheme;
 
-    @Override
-    public String visit(CreateDatabaseNode node) {
-        StringJoiner joiner = new StringJoiner(" ");
-        joiner.add("CREATE")
-                .add(node.getDbFormat() == DATABASE ? "DATABASE" : "SCHEMA");
-        if (node.isAllowExists()) {
-            joiner.add("IF NOT EXIST");
-        }
-        joiner.add(scheme.encryptDatabaseName(visit(node.getUid())));
-        for (CreateDatabaseOption option : node.getCreateDatabaseOptions()) {
-            joiner.add(visit(option));
-        }
-
-        return joiner.toString();
+    public MysqlRewriter() {
+        securityScheme = null;
+        parserWrapper = new ParserWrapper(MySqlLexer.class, MySqlParser.class);
     }
 
-    @Override
-    public String visit(Identity id) {
-        return id.getStringLiteral();
-    }
 
     @Override
-    public String visit(CreateDatabaseOption option) {
-        StringJoiner joiner = new StringJoiner(" ");
-        if (option.isDefault()) {
-            joiner.add("DEFAULT");
-        }
-        joiner.add(option.getOption() == CreateDatabaseOption.Option.CHARSET ? "CHARACTER SET" : "COLLATE")
-                .add(visit(option.getName()));
+    public Optional<String> rewrite(String source) {
+        return Optional.ofNullable(source).map(s -> {
+            try {
+                parserWrapper.init(CharStreams.fromString(s));
+            } catch (Exception ex) {
+                return null;
+            }
 
-        return joiner.toString();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            RewriterListener listener = new RewriterListener(parserWrapper.getTokens(), securityScheme);
+            ParseTree tree = ((MySqlParser) parserWrapper.getParser()).root();
+            walker.walk(listener, tree);
+            return listener.getRewriter().getText();
+        });
     }
 }
