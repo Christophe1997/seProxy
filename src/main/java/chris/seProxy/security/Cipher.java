@@ -1,6 +1,6 @@
 package chris.seProxy.security;
 
-public interface Cryptographic {
+public interface Cipher {
     byte[] encrypt(byte[] plaintext) throws Exception;
     byte[] decrypt(byte[] ciphertext) throws Exception;
 }
