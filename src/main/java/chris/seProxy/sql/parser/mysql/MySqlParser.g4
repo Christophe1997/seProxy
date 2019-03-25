@@ -25,6 +25,8 @@ THE SOFTWARE.
 
 parser grammar MySqlParser;
 
+@header {package chris.seProxy.sql.parser.mysql;}
+
 options { tokenVocab=MySqlLexer; }
 
 
@@ -763,7 +765,7 @@ insertStatement
         (',' duplicatedElements+=updatedElement)*
       )?
     ;
-
+//TODO
 loadDataStatement
     : LOAD DATA
       priority=(LOW_PRIORITY | CONCURRENT)?

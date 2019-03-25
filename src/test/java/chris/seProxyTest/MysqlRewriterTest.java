@@ -12,6 +12,10 @@ public class MysqlRewriterTest {
 
     static class TestScheme extends BaseScheme {
 
+        TestScheme() {
+            super();
+        }
+
         String testEncrypt(String name) {
             return name + "test";
         }
@@ -27,7 +31,17 @@ public class MysqlRewriterTest {
         }
 
         @Override
-        public String encryptColumnName(String tableName, String colName) {
+        public String encryptTableColumnName(String tableName, String colName) {
+            return testEncrypt(colName);
+        }
+
+        @Override
+        public String encryptViewName(String name) {
+            return testEncrypt(name);
+        }
+
+        @Override
+        public String encryptViewColumnName(String viewName, String colName) {
             return testEncrypt(colName);
         }
     }
@@ -55,5 +69,27 @@ public class MysqlRewriterTest {
         String input = "CREATE UNIQUE INDEX INDEX1 ON TABLE1(COL1, COL2)";
         String shouldOut = "CREATE UNIQUE INDEX INDEX1 ON TABLE1test(COL1test, COL2test)";
         test(input, shouldOut);
+    }
+
+    @Test
+    public void createTableShouldPass() {
+        String input = "CREATE TEMPORARY TABLE table1 LIKE copyTable";
+        String shouldOut = "CREATE TEMPORARY TABLE table1test LIKE copyTabletest";
+        test(input, shouldOut);
+    }
+
+    @Test
+    public void createViewShouldPass() {
+        String input = "CREATE VIEW test.v(a, b) AS SELECT * FROM T";
+        String shouldOut = "CREATE VIEW test.vtest(atest, btest) AS SELECT * FROM Ttest";
+        test(input, shouldOut);
+    }
+
+    @Test
+    public void insertStatementShouldPass() {
+        String input = "INSERT INTO course SET id = 3 ON DUPLICATE KEY UPDATE name='asd'";
+        String shouldOut = "not finished";
+        test(input, shouldOut);
+
     }
 }

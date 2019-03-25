@@ -27,6 +27,9 @@ lexer grammar MySqlLexer;
 
 channels { MYSQLCOMMENT, ERRORCHANNEL }
 
+@lexer::header {package chris.seProxy.sql.parser.mysql;}
+
+
 // SKIP
 
 SPACE:                               [ \t\r\n]+    -> channel(HIDDEN);

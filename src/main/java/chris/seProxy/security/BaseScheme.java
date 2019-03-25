@@ -1,6 +1,15 @@
 package chris.seProxy.security;
 
+import chris.seProxy.proxy.BaseMiddleware;
+import chris.seProxy.proxy.Middleware;
+
 public class BaseScheme implements SecurityScheme {
+
+    private Middleware middleware;
+
+    public BaseScheme() {
+        middleware = new BaseMiddleware();
+    }
 
     @Override
     public String encryptDatabaseName(String name) {
@@ -13,7 +22,22 @@ public class BaseScheme implements SecurityScheme {
     }
 
     @Override
-    public String encryptColumnName(String tableName, String colName) {
+    public String encryptViewName(String name) {
+        return name;
+    }
+
+    @Override
+    public String encryptTableColumnName(String tableName, String colName) {
         return colName;
+    }
+
+    @Override
+    public String encryptViewColumnName(String viewName, String colName) {
+        return colName;
+    }
+
+    @Override
+    public Middleware middleware() {
+        return middleware;
     }
 }
