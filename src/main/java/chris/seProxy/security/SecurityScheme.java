@@ -1,6 +1,7 @@
 package chris.seProxy.security;
 
 import chris.seProxy.proxy.Middleware;
+import chris.seProxy.rewriter.Context;
 
 public interface SecurityScheme {
 
@@ -10,9 +11,9 @@ public interface SecurityScheme {
 
     String encryptViewName(String name);
 
-    String encryptTableColumnName(String tableName, String colName);
+    String encryptColumnName(Context context, String colName);
 
-    String encryptViewColumnName(String viewName, String colName);
+    String encrypt(Context context, String val);
 
     Middleware middleware();
 }

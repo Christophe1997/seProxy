@@ -2,6 +2,7 @@ package chris.seProxy.security;
 
 import chris.seProxy.proxy.BaseMiddleware;
 import chris.seProxy.proxy.Middleware;
+import chris.seProxy.rewriter.Context;
 
 public class BaseScheme implements SecurityScheme {
 
@@ -27,14 +28,15 @@ public class BaseScheme implements SecurityScheme {
     }
 
     @Override
-    public String encryptTableColumnName(String tableName, String colName) {
+    public String encryptColumnName(Context context, String colName) {
         return colName;
     }
 
     @Override
-    public String encryptViewColumnName(String viewName, String colName) {
-        return colName;
+    public String encrypt(Context context, String val) {
+        return val;
     }
+
 
     @Override
     public Middleware middleware() {

@@ -1,5 +1,6 @@
 package chris.seProxyTest;
 
+import chris.seProxy.rewriter.Context;
 import chris.seProxy.rewriter.mysql.MysqlRewriter;
 import chris.seProxy.security.BaseScheme;
 import org.junit.Test;
@@ -30,10 +31,6 @@ public class MysqlRewriterTest {
             return testEncrypt(name);
         }
 
-        @Override
-        public String encryptTableColumnName(String tableName, String colName) {
-            return testEncrypt(colName);
-        }
 
         @Override
         public String encryptViewName(String name) {
@@ -41,8 +38,13 @@ public class MysqlRewriterTest {
         }
 
         @Override
-        public String encryptViewColumnName(String viewName, String colName) {
+        public String encryptColumnName(Context context, String colName) {
             return testEncrypt(colName);
+        }
+
+        @Override
+        public String encrypt(Context context, String val) {
+            return testEncrypt(val);
         }
     }
 
@@ -52,9 +54,7 @@ public class MysqlRewriterTest {
     }
 
     private static void test(String input, String shouldOut) {
-        rewrite(input).ifPresent(out -> {
-            assertEquals(shouldOut, out);
-        });
+        rewrite(input).ifPresent(out -> assertEquals(shouldOut, out));
     }
 
     @Test

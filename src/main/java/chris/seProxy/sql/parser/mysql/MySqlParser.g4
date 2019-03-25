@@ -765,7 +765,7 @@ insertStatement
         (',' duplicatedElements+=updatedElement)*
       )?
     ;
-//TODO
+
 loadDataStatement
     : LOAD DATA
       priority=(LOW_PRIORITY | CONCURRENT)?
@@ -813,7 +813,7 @@ replaceStatement
           (',' setElements+=updatedElement)*
       )
     ;
-
+//TODO
 selectStatement
     : querySpecification lockClause?                                #simpleSelect
     | queryExpression lockClause?                                   #parenthesisSelect
