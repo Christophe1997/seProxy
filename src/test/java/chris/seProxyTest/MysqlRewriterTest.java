@@ -22,27 +22,6 @@ public class MysqlRewriterTest {
         }
 
         @Override
-        public String encryptDatabaseName(String name) {
-            return testEncrypt(name);
-        }
-
-        @Override
-        public String encryptTableName(String name) {
-            return testEncrypt(name);
-        }
-
-
-        @Override
-        public String encryptViewName(String name) {
-            return testEncrypt(name);
-        }
-
-        @Override
-        public String encryptColumnName(Context context, String colName) {
-            return testEncrypt(colName);
-        }
-
-        @Override
         public String encrypt(Context context, String val) {
             return testEncrypt(val);
         }
@@ -57,33 +36,6 @@ public class MysqlRewriterTest {
         rewrite(input).ifPresent(out -> assertEquals(shouldOut, out));
     }
 
-    @Test
-    public void createDatabaseShouldPass() {
-        String input = "CREATE DATABASE TEST";
-        String shouldOut = "CREATE DATABASE TESTtest";
-        test(input, shouldOut);
-    }
-
-    @Test
-    public void createIndexShouldPass() {
-        String input = "CREATE UNIQUE INDEX INDEX1 ON TABLE1(COL1, COL2)";
-        String shouldOut = "CREATE UNIQUE INDEX INDEX1 ON TABLE1test(COL1test, COL2test)";
-        test(input, shouldOut);
-    }
-
-    @Test
-    public void createTableShouldPass() {
-        String input = "CREATE TEMPORARY TABLE table1 LIKE copyTable";
-        String shouldOut = "CREATE TEMPORARY TABLE table1test LIKE copyTabletest";
-        test(input, shouldOut);
-    }
-
-    @Test
-    public void createViewShouldPass() {
-        String input = "CREATE VIEW test.v(a, b) AS SELECT * FROM T";
-        String shouldOut = "CREATE VIEW test.vtest(atest, btest) AS SELECT * FROM Ttest";
-        test(input, shouldOut);
-    }
 
     @Test
     public void insertStatementShouldPass() {

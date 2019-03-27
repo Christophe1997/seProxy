@@ -5,14 +5,6 @@ import chris.seProxy.rewriter.context.Context;
 
 public interface SecurityScheme {
 
-    String encryptDatabaseName(String name);
-
-    String encryptTableName(String name);
-
-    String encryptViewName(String name);
-
-    String encryptColumnName(Context context, String colName);
-
     String encrypt(Context context, String val);
 
     Middleware middleware();

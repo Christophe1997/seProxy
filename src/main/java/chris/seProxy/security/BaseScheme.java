@@ -13,26 +13,6 @@ public class BaseScheme implements SecurityScheme {
     }
 
     @Override
-    public String encryptDatabaseName(String name) {
-        return name;
-    }
-
-    @Override
-    public String encryptTableName(String name) {
-        return name;
-    }
-
-    @Override
-    public String encryptViewName(String name) {
-        return name;
-    }
-
-    @Override
-    public String encryptColumnName(Context context, String colName) {
-        return colName;
-    }
-
-    @Override
     public String encrypt(Context context, String val) {
         return val;
     }
