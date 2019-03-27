@@ -1,6 +1,7 @@
 package chris.seProxy.rewriter.mysql;
 
 import chris.seProxy.rewriter.context.Context;
+import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;
 import chris.seProxy.security.Property;
 import chris.seProxy.security.SecurityScheme;
@@ -55,7 +56,8 @@ public class RewriterListener extends MySqlParserBaseListener {
         } else {
             cols = scheme.middleware().getColsFromTable(context.getCurrentTable());
         }
-        context.getInsertStatementContext().setCols(cols);
+
+        context.setInsertStatementContext(new InsertStatementContext(cols));
     }
 
     @Override
@@ -80,15 +82,9 @@ public class RewriterListener extends MySqlParserBaseListener {
     }
 
     @Override
-    public void exitUpdatedElement(MySqlParser.UpdatedElementContext ctx) {
-        context.clearCurrentCol();
-    }
-
-
-    @Override
     public void enterFullColumnName(MySqlParser.FullColumnNameContext ctx) {
         if (!ctx.dottedId().isEmpty()) {
-            context.setCurrentCol(ctx.dottedId(0).getText());
+            context.setCurrentCol(ctx.dottedId(0).getText().substring(1));
         } else {
             context.setCurrentCol(ctx.uid().getText());
         }
