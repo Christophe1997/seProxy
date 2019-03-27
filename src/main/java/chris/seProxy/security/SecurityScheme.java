@@ -1,7 +1,7 @@
 package chris.seProxy.security;
 
 import chris.seProxy.proxy.Middleware;
-import chris.seProxy.rewriter.Context;
+import chris.seProxy.rewriter.context.Context;
 
 public interface SecurityScheme {
 

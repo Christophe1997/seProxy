@@ -1,7 +1,8 @@
 package chris.seProxy.rewriter.mysql;
 
-import chris.seProxy.rewriter.Context;
-import chris.seProxy.rewriter.InsertStatementContext;
+import chris.seProxy.rewriter.context.Context;
+import chris.seProxy.rewriter.context.SelectStatementContext;
+import chris.seProxy.security.Property;
 import chris.seProxy.security.SecurityScheme;
 import chris.seProxy.sql.parser.mysql.MySqlParser;
 import chris.seProxy.sql.parser.mysql.MySqlParserBaseListener;
@@ -149,7 +150,6 @@ public class RewriterListener extends MySqlParserBaseListener {
 
     // DML statement rewrite
 
-
     @Override
     public void enterInsertStatement(MySqlParser.InsertStatementContext ctx) {
         context.setCurrentTable(ctx.tableName().getText());
@@ -193,19 +193,14 @@ public class RewriterListener extends MySqlParserBaseListener {
         context.clearCurrentCol();
     }
 
-    @Override
-    public void enterConstant(MySqlParser.ConstantContext ctx) {
-        rewriter.replace(ctx.getStart(), scheme.encrypt(context, ctx.getText()));
-    }
 
     @Override
     public void enterFullColumnName(MySqlParser.FullColumnNameContext ctx) {
         if (ctx.dottedId() != null) {
+            context.setCurrentTable(ctx.uid().getText());
             replaceUid(ctx.uid(), scheme::encryptTableName);
-            ctx.dottedId().forEach(dottedId -> {
-                rewriter.replace(dottedId.getStart(), dottedId.getStop(),
-                        "." + scheme.encryptColumnName(context, dottedId.getText().substring(1)));
-            });
+            ctx.dottedId().forEach(dottedId -> rewriter.replace(dottedId.getStart(), dottedId.getStop(),
+                    "." + scheme.encryptColumnName(context, dottedId.getText().substring(1))));
         }
     }
 
@@ -226,7 +221,6 @@ public class RewriterListener extends MySqlParserBaseListener {
         }
     }
 
-
     @Override
     public void enterReplaceStatement(MySqlParser.ReplaceStatementContext ctx) {
         context.setCurrentTable(ctx.tableName().getText());
@@ -244,10 +238,137 @@ public class RewriterListener extends MySqlParserBaseListener {
         context.clearCurrentTable();
         context.getInsertStatementContext().clear();
     }
+    // Select
+
+
+    @Override
+    public void enterSimpleSelect(MySqlParser.SimpleSelectContext ctx) {
+        context.setSelectStatementContext(new SelectStatementContext());
+    }
+
+    @Override
+    public void enterParenthesisSelect(MySqlParser.ParenthesisSelectContext ctx) {
+        context.setSelectStatementContext(new SelectStatementContext());
+    }
+
+    @Override
+    public void exitSimpleSelect(MySqlParser.SimpleSelectContext ctx) {
+        context.setSelectStatementContext(null);
+    }
+
+    @Override
+    public void exitParenthesisSelect(MySqlParser.ParenthesisSelectContext ctx) {
+        context.setSelectStatementContext(null);
+    }
+
+    @Override
+    public void enterUnionSelect(MySqlParser.UnionSelectContext ctx) {
+        context.setSelectStatementContext(new SelectStatementContext());
+    }
+
+    @Override
+    public void exitUnionSelect(MySqlParser.UnionSelectContext ctx) {
+        context.setSelectStatementContext(null);
+    }
+
+    @Override
+    public void enterUnionParenthesisSelect(MySqlParser.UnionParenthesisSelectContext ctx) {
+        context.setSelectStatementContext(new SelectStatementContext());
+    }
+
+    @Override
+    public void exitUnionParenthesisSelect(MySqlParser.UnionParenthesisSelectContext ctx) {
+        context.setSelectStatementContext(null);
+    }
+
+    @Override
+    public void enterQuerySpecification(MySqlParser.QuerySpecificationContext ctx) {
+        if (ctx.orderByClause() != null) {
+            context.getSelectStatementContext().setProperty(Property.ORDER);
+        }
+    }
 
     @Override
     public void enterSelectStarElement(MySqlParser.SelectStarElementContext ctx) {
         replaceFullId(ctx.fullId(), scheme::encryptTableName);
+    }
+
+    @Override
+    public void enterAtomTableItem(MySqlParser.AtomTableItemContext ctx) {
+        if (context.getSelectStatementContext() == null) {
+            context.setSelectStatementContext(new SelectStatementContext());
+        }
+        context.getSelectStatementContext().addTable(ctx.tableName().getText(),
+                ctx.alias != null ? ctx.alias.getText() : "");
+    }
+
+    // TODO support subqueryTableItem
+
+
+    @Override
+    public void enterInPredicate(MySqlParser.InPredicateContext ctx) {
+        context.setCurrentProperty(Property.EQUALITY);
+    }
+
+    @Override
+    public void exitInPredicate(MySqlParser.InPredicateContext ctx) {
+        context.clearCurrentProperty();
+    }
+
+    @Override
+    public void enterBinaryComparasionPredicate(MySqlParser.BinaryComparasionPredicateContext ctx) {
+        if (context.getSelectStatementContext() != null) {
+            String op = ctx.comparisonOperator().getText();
+            if (op.equals("=") || op.equals("!=")) {
+                context.setCurrentProperty(Property.EQUALITY);
+            } else {
+                context.setCurrentProperty(Property.ORDER);
+            }
+        }
+    }
+
+    @Override
+    public void exitBinaryComparasionPredicate(MySqlParser.BinaryComparasionPredicateContext ctx) {
+        context.clearCurrentProperty();
+    }
+
+    @Override
+    public void enterBetweenPredicate(MySqlParser.BetweenPredicateContext ctx) {
+        context.setCurrentProperty(Property.ORDER);
+    }
+
+    @Override
+    public void exitBetweenPredicate(MySqlParser.BetweenPredicateContext ctx) {
+        context.clearCurrentProperty();
+    }
+
+    @Override
+    public void enterSoundsLikePredicate(MySqlParser.SoundsLikePredicateContext ctx) {
+        context.setCurrentProperty(Property.LIKE);
+    }
+
+    @Override
+    public void exitSoundsLikePredicate(MySqlParser.SoundsLikePredicateContext ctx) {
+        context.clearCurrentProperty();
+    }
+
+    @Override
+    public void enterLikePredicate(MySqlParser.LikePredicateContext ctx) {
+        context.setCurrentProperty(Property.LIKE);
+    }
+
+    @Override
+    public void exitLikePredicate(MySqlParser.LikePredicateContext ctx) {
+        context.clearCurrentProperty();
+    }
+
+    // TODO support regexp
+
+
+    @Override
+    public void enterConstant(MySqlParser.ConstantContext ctx) {
+        rewriter.replace(ctx.getStart(), ctx.getStop(),
+                scheme.encrypt(context, ctx.getText()));
     }
 
 }

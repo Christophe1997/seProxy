@@ -1,4 +1,4 @@
-package chris.seProxy.rewriter;
+package chris.seProxy.rewriter.context;
 
 import lombok.Getter;
 import lombok.Setter;

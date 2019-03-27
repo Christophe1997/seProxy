@@ -813,6 +813,7 @@ replaceStatement
           (',' setElements+=updatedElement)*
       )
     ;
+
 //TODO
 selectStatement
     : querySpecification lockClause?                                #simpleSelect
