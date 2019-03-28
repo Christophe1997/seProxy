@@ -50,4 +50,9 @@ public class MysqlRewriterTest {
         String shouldOut = "INSERT INTO course(id, name) VALUES (course$id$1, course$name$'a'), (course$id$2, course$name$'b')";
         test(input, shouldOut);
     }
+
+    @Test
+    public void selectStatementShouldPass() {
+        String input = "SELECT ";
+    }
 }
