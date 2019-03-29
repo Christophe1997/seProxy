@@ -53,6 +53,9 @@ public class MysqlRewriterTest {
 
     @Test
     public void selectStatementShouldPass() {
-        String input = "SELECT ";
+        String input1 = "SELECT * FROM table1 where id=2";
+        String input2 = "SELECT * FROM table1 where table.id=2";
+        String input3 = "SELECT * FROM table1 AS t1 where t1.id=2";
+        String input4 = "SELECT t1.id AS e1, t2.id AS e2 from course as t1, student as t2 limit 10";
     }
 }

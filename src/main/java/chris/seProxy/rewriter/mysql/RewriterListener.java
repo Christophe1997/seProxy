@@ -1,5 +1,6 @@
 package chris.seProxy.rewriter.mysql;
 
+import chris.seProxy.exception.RewriteFailure;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;
@@ -29,6 +30,8 @@ public class RewriterListener extends MySqlParserBaseListener {
 
     private Context context;
 
+    private Context tempContext;
+
     public RewriterListener(TokenStream stream, SecurityScheme scheme) {
         rewriter = new TokenStreamRewriter(stream);
         this.scheme = scheme;
@@ -54,7 +57,8 @@ public class RewriterListener extends MySqlParserBaseListener {
         if (ctx.columns != null) {
             cols = ctx.columns.uid().stream().map(RuleContext::getText).collect(Collectors.toList());
         } else {
-            cols = scheme.middleware().getColsFromTable(context.getCurrentTable());
+            cols = scheme.middleware().getColsFromTable(
+                    context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack.")));
         }
 
         context.setInsertStatementContext(new InsertStatementContext(cols));
@@ -107,7 +111,8 @@ public class RewriterListener extends MySqlParserBaseListener {
         if (ctx.columns != null) {
             cols = ctx.columns.uid().stream().map(RuleContext::getText).collect(Collectors.toList());
         } else {
-            cols = scheme.middleware().getColsFromTable(context.getCurrentTable());
+            cols = scheme.middleware().getColsFromTable(
+                    context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack")));
         }
         context.getInsertStatementContext().setCols(cols);
     }
@@ -180,6 +185,22 @@ public class RewriterListener extends MySqlParserBaseListener {
 
     // TODO support subqueryTableItem
 
+
+    @Override
+    public void enterLimitClause(MySqlParser.LimitClauseContext ctx) {
+        tempContext = context;
+        context.clearAll();
+    }
+
+    @Override
+    public void exitLimitClause(MySqlParser.LimitClauseContext ctx) {
+        if (tempContext == null) {
+            throw new RewriteFailure("No context cached");
+        } else {
+            context = tempContext;
+            tempContext = null;
+        }
+    }
 
     @Override
     public void enterInPredicate(MySqlParser.InPredicateContext ctx) {

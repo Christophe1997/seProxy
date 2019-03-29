@@ -4,6 +4,8 @@ import chris.seProxy.security.Property;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.EmptyStackException;
+import java.util.Optional;
 import java.util.Stack;
 
 public class Context {
@@ -24,16 +26,28 @@ public class Context {
         propertyStack = new Stack<>();
     }
 
-    public String getCurrentTable() {
-        return tableStack.peek();
+    public Optional<String> getCurrentTable() {
+        try {
+            return Optional.of(tableStack.peek());
+        } catch (EmptyStackException ex) {
+            return Optional.empty();
+        }
     }
 
-    public String getCurrentCol() {
-        return colStack.peek();
+    public Optional<String> getCurrentCol() {
+        try {
+            return Optional.of(colStack.peek());
+        } catch (EmptyStackException ex) {
+            return Optional.empty();
+        }
     }
 
-    public Property getCurrentProperty() {
-        return propertyStack.peek();
+    public Optional<Property> getCurrentProperty() {
+        try {
+            return Optional.of(propertyStack.peek());
+        } catch (EmptyStackException ex) {
+            return Optional.empty();
+        }
     }
 
     public void setCurrentTable(String tableName) {
