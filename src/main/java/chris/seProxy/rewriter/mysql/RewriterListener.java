@@ -5,7 +5,7 @@ import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;
 import chris.seProxy.security.Property;
-import chris.seProxy.security.SecurityScheme;
+import chris.seProxy.security.scheme.SecurityScheme;
 import chris.seProxy.sql.parser.mysql.MySqlParser;
 import chris.seProxy.sql.parser.mysql.MySqlParserBaseListener;
 import lombok.Getter;
@@ -13,13 +13,11 @@ import lombok.Setter;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-//TODO
+// TODO more features
 public class RewriterListener extends MySqlParserBaseListener {
     @Getter
     @Setter

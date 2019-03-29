@@ -1,4 +1,4 @@
-package chris.seProxy.security;
+package chris.seProxy.security.scheme;
 
 import chris.seProxy.proxy.Middleware;
 import chris.seProxy.rewriter.context.Context;

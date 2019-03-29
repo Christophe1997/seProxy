@@ -814,7 +814,6 @@ replaceStatement
       )
     ;
 
-//TODO
 selectStatement
     : querySpecification lockClause?                                #simpleSelect
     | queryExpression lockClause?                                   #parenthesisSelect
@@ -831,7 +830,7 @@ selectStatement
         )?
         orderByClause? limitClause? lockClause?                     #unionParenthesisSelect
     ;
-
+// TODO
 updateStatement
     : singleUpdateStatement | multipleUpdateStatement
     ;

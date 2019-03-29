@@ -1,4 +1,4 @@
-package chris.seProxy.security;
+package chris.seProxy.security.cipher;
 
 import chris.seProxy.util.KeyStoreWrapper;
 import lombok.Getter;

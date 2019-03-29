@@ -2,7 +2,7 @@ package chris.seProxyTest;
 
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.rewriter.mysql.MysqlRewriter;
-import chris.seProxy.security.BaseScheme;
+import chris.seProxy.security.scheme.BaseScheme;
 import org.junit.Test;
 
 import java.util.Optional;
