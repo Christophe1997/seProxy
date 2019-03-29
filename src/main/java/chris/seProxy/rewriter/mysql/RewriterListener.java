@@ -38,16 +38,6 @@ public class RewriterListener extends MySqlParserBaseListener {
         context = new Context();
     }
 
-    // help function
-
-    private void replaceUid(@NotNull MySqlParser.UidContext ctx, @NotNull Function<String, String> mapper) {
-        rewriter.replace(ctx.getStart(), mapper.apply(ctx.getText()));
-    }
-
-    private void replaceFullId(@NotNull MySqlParser.FullIdContext ctx, @NotNull Function<String, String> mapper) {
-        rewriter.replace(ctx.getStart(), ctx.getStop(), mapper.apply(ctx.getText()));
-    }
-
     // DML statement
 
     @Override
@@ -88,8 +78,17 @@ public class RewriterListener extends MySqlParserBaseListener {
     @Override
     public void enterFullColumnName(MySqlParser.FullColumnNameContext ctx) {
         if (!ctx.dottedId().isEmpty()) {
+            if (context.getSelectStatementContext() != null) {
+                context.getSelectStatementContext().getTableName(ctx.uid().getText()).ifPresent(
+                        s -> context.setCurrentTable(s)
+                );
+            }
             context.setCurrentCol(ctx.dottedId(0).getText().substring(1));
         } else {
+            if (context.getSelectStatementContext() != null) {
+                context.setCurrentTable(context.getSelectStatementContext().getDefaultTable().orElseThrow(() ->
+                        new RewriteFailure("no table declared")));
+            }
             context.setCurrentCol(ctx.uid().getText());
         }
     }
@@ -180,7 +179,7 @@ public class RewriterListener extends MySqlParserBaseListener {
     @Override
     public void enterAtomTableItem(MySqlParser.AtomTableItemContext ctx) {
         context.getSelectStatementContext().addTable(ctx.tableName().getText(),
-                ctx.alias != null ? ctx.alias.getText() : "");
+                ctx.alias != null ? ctx.alias.getText() : ctx.tableName().getText());
     }
 
     // TODO support subqueryTableItem

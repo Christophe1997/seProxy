@@ -2,6 +2,7 @@ package chris.seProxy.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -93,6 +94,22 @@ public class Assoc<A, B> implements Iterable<Assoc<A, B>.AssocElem> {
             }
         }
         return false;
+    }
+
+    public Optional<A> getDefaultFst() {
+        if (!data.isEmpty()) {
+            return Optional.of(data.get(0).fst);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<B> getDefaultSnd() {
+        if (!data.isEmpty()) {
+            return Optional.of(data.get(0).snd);
+        } else {
+            return Optional.empty();
+        }
     }
 
 }

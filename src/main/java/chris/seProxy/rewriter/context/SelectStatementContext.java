@@ -23,10 +23,11 @@ public class SelectStatementContext {
     }
 
     public Optional<String> getTableAlias(String tableName) {
-        return tableAlias.findSnd(tableName).flatMap(s -> {
-            if (s.equals("")) return Optional.empty();
-            else return Optional.of(s);
-        });
+        return tableAlias.findSnd(tableName);
+    }
+
+    public Optional<String> getDefaultTable() {
+        return tableAlias.getDefaultFst();
     }
 
     public Optional<String> getTableName(String alias) {

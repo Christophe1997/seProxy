@@ -17,13 +17,15 @@ public class MysqlRewriterTest {
             super();
         }
 
-        String testEncrypt(String name) {
-            return name + "test";
-        }
-
         @Override
         public String encrypt(Context context, String val) {
-            return context.getCurrentTable() + "$" + context.getCurrentCol() + "$" + val;
+
+            StringBuilder builder = new StringBuilder();
+            context.getCurrentTable().ifPresent(s -> builder.append(s).append("$"));
+            context.getCurrentCol().ifPresent(s -> builder.append(s).append("$"));
+            context.getCurrentProperty().ifPresent(s -> builder.append(s).append("$"));
+            return builder.append(val).toString();
+
         }
     }
 
@@ -38,24 +40,35 @@ public class MysqlRewriterTest {
 
 
     @Test
-    public void insertStatementSetShouldPass() {
-        String input = "INSERT INTO course SET course.id = 3 ON DUPLICATE KEY UPDATE name='asd'";
-        String shouldOut = "INSERT INTO course SET course.id = course$id$3 ON DUPLICATE KEY UPDATE name=course$name$'asd'";
-        test(input, shouldOut);
-    }
+    public void insertStatementShouldPass() {
+        String input1 = "INSERT INTO course SET course.id = 3 ON DUPLICATE KEY UPDATE name='asd'";
+        String shouldOut1 = "INSERT INTO course SET course.id = course$id$3 ON DUPLICATE KEY UPDATE name=course$name$'asd'";
+        test(input1, shouldOut1);
 
-    @Test
-    public void insertStatementValuesShouldPass() {
-        String input = "INSERT INTO course(id, name) VALUES (1, 'a'), (2, 'b')";
-        String shouldOut = "INSERT INTO course(id, name) VALUES (course$id$1, course$name$'a'), (course$id$2, course$name$'b')";
-        test(input, shouldOut);
+        String input2 = "INSERT INTO course(id, name) VALUES (1, 'a'), (2, 'b')";
+        String shouldOut2 = "INSERT INTO course(id, name) VALUES (course$id$1, course$name$'a'), (course$id$2, course$name$'b')";
+        test(input2, shouldOut2);
     }
 
     @Test
     public void selectStatementShouldPass() {
-        String input1 = "SELECT * FROM table1 where id=2";
-        String input2 = "SELECT * FROM table1 where table.id=2";
-        String input3 = "SELECT * FROM table1 AS t1 where t1.id=2";
-        String input4 = "SELECT t1.id AS e1, t2.id AS e2 from course as t1, student as t2 limit 10";
+        String input1 = "SELECT * FROM table1 WHERE id=2";
+        String input2 = "SELECT * FROM table1 WHERE table1.id>2";
+        String input3 = "SELECT * FROM table1 AS t1 WHERE t1.id=2";
+        String input4 = "SELECT t1.id AS e1, t2.id AS e2 FROM table1 AS t1, table2 AS t2" +
+                " where t1.id > 2 and t2.id > 3 LIMIT 10";
+
+        String shouldOut1 = "SELECT * FROM table1 WHERE id=table1$id$EQUALITY$2";
+        test(input1, shouldOut1);
+
+        String shouldOut2 = "SELECT * FROM table1 WHERE table1.id>table1$id$ORDER$2";
+        test(input2, shouldOut2);
+
+        String shouldOut3 = "SELECT * FROM table1 AS t1 WHERE t1.id=table1$id$EQUALITY$2";
+        test(input3, shouldOut3);
+
+        String shouldOut4 = "SELECT t1.id AS e1, t2.id AS e2 FROM table1 AS t1, table2 AS t2" +
+                " where t1.id > table1$id$ORDER$2 and t2.id > table2$id$ORDER$3 LIMIT 10";
+        test(input4, shouldOut4);
     }
 }
