@@ -8,6 +8,4 @@ public interface SecurityScheme {
     String encrypt(Context context, String val);
 
     Middleware middleware();
-
-
 }
