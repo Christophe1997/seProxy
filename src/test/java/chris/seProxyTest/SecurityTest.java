@@ -3,6 +3,7 @@ package chris.seProxyTest;
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
 import chris.seProxy.security.cipher.AESCipher;
+import chris.seProxy.security.scheme.SecurityScheme;
 import org.junit.Test;
 
 import javax.crypto.KeyGenerator;
@@ -20,11 +21,10 @@ public class SecurityTest {
         byte[] key = kg.generateKey().getEncoded();
         String plainText = "it's aes algorithm";
         byte[] cipherText = cipher.encrypt(plainText.getBytes(), key);
-        byte[] base64EncodedData = Base64.getEncoder().encode(cipherText);
-        String encryptedText = new String(base64EncodedData);
-        System.out.println(encryptedText);
+        String encryptData = SecurityScheme.base64Encode(cipherText);
+        System.out.println(encryptData);
 
-        byte[] plainTextData = cipher.decrypt(Base64.getDecoder().decode(encryptedText.getBytes()), key);
+        byte[] plainTextData = cipher.decrypt(SecurityScheme.base64Decode(encryptData), key);
         assertEquals(plainText, new String(plainTextData));
 
     }
