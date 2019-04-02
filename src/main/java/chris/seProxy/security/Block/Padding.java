@@ -12,7 +12,7 @@ public enum Padding {
     X923("X923Padding"), X9_23("X9.23Padding"),
     TBC("TBCPadding"),
     ZeroByte("ZeroBytePadding"),
-    WithCTS("WithCTS");
+    WithCTS("WithCTS"); // if used with ECB mode
 
     private final String padding;
 

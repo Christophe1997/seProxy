@@ -4,12 +4,19 @@ import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
 import chris.seProxy.util.KeyStoreWrapper;
 import lombok.Getter;
+import lombok.Setter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
+import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
 import java.security.Security;
 
-public class AESCipher implements Cipher {
+public class AESCipher {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -17,56 +24,61 @@ public class AESCipher implements Cipher {
 
     private static final String KEY_ALGORITHM = "AES";
 
-    @Getter
-    private String algorithm = "AES";
-    @Getter
+    private static final String ALGORITHM = "AES";
+
+    @Getter @Setter
     private int keyLength = 256;
+
     @Getter
-    private Mode mode;
-    @Getter
-    private Padding padding;
-    @Getter
-    private String fullAlgorithm;
+    private String cipherAlgorithm;
 
-    public AESCipher() {
-        this.mode = Mode.ECB;
-        this.padding = Padding.NoPadding;
-        setFullAlgorithm();
+    private Cipher cipher;
+
+    public AESCipher(Mode mode, Padding padding) throws Exception {
+        cipherAlgorithm = toCipherAlgorithm(mode, padding);
+        cipher = Cipher.getInstance(cipherAlgorithm, "BC");
     }
 
-    public AESCipher(Mode mode) {
-        this.mode = mode;
-        this.padding = Padding.PKCS5;
-        setFullAlgorithm();
-    }
-
-    public AESCipher(Mode mode, Padding padding) {
-        this.mode = mode;
-        this.padding = padding;
-        setFullAlgorithm();
-    }
-
-    public AESCipher(String fullAlgorithm) {
-        this.fullAlgorithm = fullAlgorithm;
-    }
-
-    private void setFullAlgorithm() {
-        fullAlgorithm = String.join("/", algorithm, mode.toString(), padding.toString());
-    }
-
-    public void initKey(String alias, KeyStoreWrapper wrapper) throws Exception {
+    public void initKey(String alias, @NotNull KeyStoreWrapper wrapper) throws Exception {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         kg.init(keyLength);
         wrapper.set(alias, kg.generateKey());
     }
 
-    @Override
-    public byte[] encrypt(byte[] plaintext, byte[] key) throws Exception {
-        return new byte[0];
+    @NotNull
+    private static String toCipherAlgorithm(@NotNull Mode mode, @NotNull Padding padding) {
+        return String.join("/", ALGORITHM, mode.toString(), padding.toString());
     }
 
-    @Override
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    private static Key toKey(byte[] key) throws Exception {
+        return new SecretKeySpec(key, KEY_ALGORITHM);
+    }
+
+    public byte[] encrypt(byte[] plaintext, byte[] key) throws Exception {
+        Key k = toKey(key);
+        cipher.init(Cipher.ENCRYPT_MODE, k);
+        return cipher.doFinal(plaintext);
+    }
+
+    public byte[] encrypt(byte[] plaintext, byte[] key, byte[] iv) throws Exception {
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+        Key k = toKey(key);
+        cipher.init(Cipher.ENCRYPT_MODE, k, ivParameterSpec);
+        return cipher.doFinal(plaintext);
+    }
+
     public byte[] decrypt(byte[] ciphertext, byte[] key) throws Exception {
-        return new byte[0];
+        Key k = toKey(key);
+        cipher.init(Cipher.DECRYPT_MODE, k);
+        return cipher.doFinal(ciphertext);
+    }
+
+    public byte[] decrypt(byte[] ciphertext, byte[] key, byte[] iv) throws Exception {
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+        Key k = toKey(key);
+        cipher.init(Cipher.DECRYPT_MODE, k, ivParameterSpec);
+        return cipher.doFinal(ciphertext);
     }
 }
