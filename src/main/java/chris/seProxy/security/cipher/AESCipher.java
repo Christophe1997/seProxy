@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
@@ -34,15 +35,24 @@ public class AESCipher {
 
     private Cipher cipher;
 
+    public AESCipher() throws Exception {
+        cipherAlgorithm = toCipherAlgorithm(Mode.ECB, Padding.NoPadding);
+        cipher = Cipher.getInstance(cipherAlgorithm, "BC");
+    }
+
     public AESCipher(Mode mode, Padding padding) throws Exception {
         cipherAlgorithm = toCipherAlgorithm(mode, padding);
         cipher = Cipher.getInstance(cipherAlgorithm, "BC");
     }
 
     public void initKey(String alias, @NotNull KeyStoreWrapper wrapper) throws Exception {
+        wrapper.set(alias, (SecretKey) toKey(generateKey()));
+    }
+
+    public byte[] generateKey() throws Exception {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         kg.init(keyLength);
-        wrapper.set(alias, kg.generateKey());
+        return kg.generateKey().getEncoded();
     }
 
     @NotNull
@@ -52,7 +62,7 @@ public class AESCipher {
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    private static Key toKey(byte[] key) throws Exception {
+    private static Key toKey(byte[] key) {
         return new SecretKeySpec(key, KEY_ALGORITHM);
     }
 
