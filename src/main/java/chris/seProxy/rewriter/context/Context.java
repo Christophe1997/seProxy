@@ -8,6 +8,9 @@ import java.util.EmptyStackException;
 import java.util.Optional;
 import java.util.Stack;
 
+/**
+ * Context during walk through the parse tree.
+ */
 public class Context {
 
     private Stack<String> tableStack;

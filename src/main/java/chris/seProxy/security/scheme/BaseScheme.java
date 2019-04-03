@@ -4,6 +4,10 @@ import chris.seProxy.proxy.BaseMiddleware;
 import chris.seProxy.proxy.Middleware;
 import chris.seProxy.rewriter.context.Context;
 
+
+/**
+ * Default scheme as identity
+ */
 public class BaseScheme implements SecurityScheme {
 
     private Middleware middleware;

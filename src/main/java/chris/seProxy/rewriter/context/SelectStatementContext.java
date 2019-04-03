@@ -7,10 +7,19 @@ import lombok.Setter;
 
 import java.util.*;
 
+/**
+ * Specific context for select statememt
+ */
 public class SelectStatementContext {
 
+    /**
+     * always has {@code AS} statement
+     */
     private Assoc<String, String> tableAlias;
 
+    /**
+     * operation property
+     */
     @Setter @Getter
     private Property property;
 

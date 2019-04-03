@@ -7,10 +7,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Base64;
 
+/**
+ * Core scheme for how to encrypt, which algorithm to use, is it necessary to adjust the database
+ */
 public interface SecurityScheme {
 
     String encrypt(Context context, String val);
 
+    /**
+     * Middleware that control the database
+     * @return {@link Middleware}
+     */
     Middleware middleware();
 
     @NotNull

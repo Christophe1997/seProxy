@@ -5,7 +5,13 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Specific context for insert statement
+ */
 public class InsertStatementContext {
+    /**
+     * Always has a column list
+     */
     @Setter
     private List<String> cols;
     @Getter @Setter

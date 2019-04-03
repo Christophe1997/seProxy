@@ -38,6 +38,11 @@ public class RewriterListener extends MySqlParserBaseListener {
 
     // DML statement
 
+    /**
+     * While enter insert statement, such as {@code INSERT INTO t1(id, name) VALUES (2, "Bob"), (3, Alice)}.
+     * To get the exact context for specific column, it is important to get the whole column that used in
+     * the statememnt.
+     */
     @Override
     public void enterInsertStatement(MySqlParser.InsertStatementContext ctx) {
         context.setCurrentTable(ctx.tableName().getText());
@@ -72,7 +77,10 @@ public class RewriterListener extends MySqlParserBaseListener {
     public void exitExpressionOrDefault(MySqlParser.ExpressionOrDefaultContext ctx) {
         context.getInsertStatementContext().inc();
     }
-
+    /**
+     * FullColumnName is import to get the specific context, it always has table context, such as {@code table1.col1},
+     * if not, it means the table context can get from earlier context. Now it only handle the select statement.
+     */
     @Override
     public void enterFullColumnName(MySqlParser.FullColumnNameContext ctx) {
         if (!ctx.dottedId().isEmpty()) {
@@ -174,6 +182,9 @@ public class RewriterListener extends MySqlParserBaseListener {
         context.setCurrentTable(ctx.fullId().getText());
     }
 
+    /**
+     * this is where table name and it's alias come from.
+     */
     @Override
     public void enterAtomTableItem(MySqlParser.AtomTableItemContext ctx) {
         context.getSelectStatementContext().addTable(ctx.tableName().getText(),
@@ -209,6 +220,9 @@ public class RewriterListener extends MySqlParserBaseListener {
         context.clearCurrentProperty();
     }
 
+    /**
+     * With binary comparison operator, the operations property can be determined.
+     */
     @Override
     public void enterBinaryComparasionPredicate(MySqlParser.BinaryComparasionPredicateContext ctx) {
         if (context.getSelectStatementContext() != null) {
