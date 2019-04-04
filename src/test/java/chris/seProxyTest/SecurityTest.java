@@ -3,11 +3,17 @@ package chris.seProxyTest;
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
 import chris.seProxy.security.cipher.AESCipher;
+import chris.seProxy.security.cipher.ope.Range;
 import chris.seProxy.security.scheme.SecurityScheme;
+import org.apache.commons.math3.distribution.HypergeometricDistribution;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 
+import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import java.util.Base64;
+
+import java.math.BigInteger;
+import java.security.Security;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,5 +33,15 @@ public class SecurityTest {
         byte[] plainTextData = cipher.decrypt(SecurityScheme.base64Decode(encryptData), key);
         assertEquals(plainText, new String(plainTextData));
 
+    }
+
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+    @Test
+    public void OpeCipherTestShouldPass() throws Exception {
+        HypergeometricDistribution hg = new HypergeometricDistribution(100, 40, 20);
+        
     }
 }

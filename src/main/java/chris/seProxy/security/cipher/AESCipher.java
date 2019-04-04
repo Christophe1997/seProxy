@@ -45,10 +45,6 @@ public class AESCipher {
         cipher = Cipher.getInstance(cipherAlgorithm, "BC");
     }
 
-    public void initKey(String alias, @NotNull KeyStoreWrapper wrapper) throws Exception {
-        wrapper.set(alias, (SecretKey) toKey(generateKey()));
-    }
-
     public byte[] generateKey() throws Exception {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         kg.init(keyLength);
