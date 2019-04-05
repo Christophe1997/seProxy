@@ -3,7 +3,7 @@ package chris.seProxyTest;
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
 import chris.seProxy.security.cipher.AESCipher;
-import chris.seProxy.security.cipher.ope.Range;
+import chris.seProxy.security.cipher.ope.*;
 import chris.seProxy.security.scheme.SecurityScheme;
 import org.apache.commons.math3.distribution.HypergeometricDistribution;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -12,8 +12,12 @@ import org.junit.Test;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.Security;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -41,7 +45,9 @@ public class SecurityTest {
 
     @Test
     public void OpeCipherTestShouldPass() throws Exception {
-        HypergeometricDistribution hg = new HypergeometricDistribution(100, 40, 20);
-        
+        BigInteger plainText = BigInteger.valueOf(60);
+        OPECipher cipher = new OPECipher();
+//
+        System.out.println(cipher.encrypt(plainText, "key".getBytes()));
     }
 }

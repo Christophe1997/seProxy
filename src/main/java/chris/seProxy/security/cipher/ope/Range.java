@@ -9,9 +9,9 @@ import java.math.BigInteger;
 public class Range {
 
     @Getter @Setter
-    BigInteger min;
+    private BigInteger min;
     @Getter @Setter
-    BigInteger max;
+    private BigInteger max;
 
 
     public Range(@NotNull BigInteger min, @NotNull BigInteger max) {
