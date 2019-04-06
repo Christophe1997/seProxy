@@ -10,6 +10,9 @@ import java.security.cert.Certificate;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Key store manager as a wrapper of {@link KeyStore}
+ */
 public class KeyStoreWrapper {
     static {
         Security.addProvider(new BouncyCastleProvider());

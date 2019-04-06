@@ -7,7 +7,7 @@ import lombok.Setter;
 import org.antlr.v4.runtime.*;
 
 /**
- * Parser Wrapper
+ * Parser Wrapper that manage different parser and lexer
  */
 public class ParserWrapper {
 
