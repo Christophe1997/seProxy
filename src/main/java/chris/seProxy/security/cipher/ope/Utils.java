@@ -1,24 +1,22 @@
 package chris.seProxy.security.cipher.ope;
 
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
 
 import java.math.BigInteger;
 import java.util.stream.IntStream;
 
-public class Util {
+class Utils {
 
-    public static IntStream fromByte(byte b) {
+    static IntStream fromByte(byte b) {
         String binaryStr = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
         return binaryStr.chars().map(i -> i - '0');
     }
 
-    public static String toBigIntegerStr(double d) {
+    private static String toBigIntegerStr(double d) {
         return String.format("%.0f", d);
     }
 
 
-    public static BigInteger sampleHGD(Range inRange, Range outRange, BigInteger nsample, TapeGen coins) {
+    static BigInteger sampleHGD(Range inRange, Range outRange, BigInteger nsample, TapeGen coins) {
         BigInteger inSize = inRange.size();
         BigInteger outSize = outRange.size();
 
@@ -40,7 +38,7 @@ public class Util {
         }
     }
 
-    public static BigInteger sampleUniform(Range inRange, TapeGen coins) {
+    static BigInteger sampleUniform(Range inRange, TapeGen coins) {
         HGD.PRNG rng = new HGD.PRNG(coins);
         Range cur = new Range(inRange.getMin(), inRange.getMax());
         while (cur.size().compareTo(BigInteger.ONE) > 0) {

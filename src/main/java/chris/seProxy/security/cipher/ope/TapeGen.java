@@ -10,7 +10,10 @@ import java.security.Key;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class TapeGen {
+/**
+ * Random byte stream generator(PRG, PRF) with HMAC and AES
+ */
+class TapeGen {
 
     private static final String MAC_ALGORITHM = "HmacSHA256";
     private static final String AES_ALGORITHM = "AES/CTR/PKCS5Padding";
@@ -22,7 +25,7 @@ public class TapeGen {
 
 
 
-    public TapeGen(byte[] key, BigInteger data) throws Exception {
+    TapeGen(byte[] key, BigInteger data) throws Exception {
         Mac sha256_HMAC = Mac.getInstance(MAC_ALGORITHM);
         Key k = new SecretKeySpec(key, MAC_ALGORITHM);
         sha256_HMAC.init(k);
@@ -38,12 +41,12 @@ public class TapeGen {
         byte[] encrypted_byte = cipher.update(new byte[16]);
         List<IntStream> l = new ArrayList<>();
         for (byte b : encrypted_byte) {
-            l.add(Util.fromByte(b));
+            l.add(Utils.fromByte(b));
         }
         return l.stream().reduce(IntStream.empty(), IntStream::concat).toArray();
     }
 
-    public int[] nextCoins() {
+    int[] nextCoins() {
         int[] res = Arrays.copyOfRange(provideCoins, idx * 32, (idx + 1) * 32);
         idx += 1;
         if (idx >= 4) {

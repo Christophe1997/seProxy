@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.Security;
-import java.util.stream.IntStream;
 
 /**
  * Reference: <a href="http://www.cc.gatech.edu/~aboldyre/papers/bclo.pdf">
@@ -62,23 +61,16 @@ public class OPECipher {
 
         if (inRange.size().compareTo(BigInteger.ONE) == 0) {
             TapeGen coins = new TapeGen(key, plaintext);
-            return Util.sampleUniform(outRange, coins);
+            return Utils.sampleUniform(outRange, coins);
         }
 
         TapeGen coins = new TapeGen(key, mid);
-        System.out.print(inRange + " ");
-        System.out.print(outRange + " ");
-        System.out.print(mid + " ");
-        System.out.println();
-        BigInteger x = Util.sampleHGD(inRange, outRange, mid, coins);
-        System.out.println(x);
+        BigInteger x = Utils.sampleHGD(inRange, outRange, mid, coins);
         if (plaintext.compareTo(x) <= 0) {
-            System.out.println(1);
             return encrypt(plaintext, key,
                     new Range(inEdge.add(BigInteger.ONE), x),
                     new Range(outEdge.add(BigInteger.ONE), mid));
         } else {
-            System.out.println(0);
             return encrypt(plaintext, key,
                     new Range(x.add(BigInteger.ONE), inEdge.add(inSize)),
                     new Range(mid.add(BigInteger.ONE), outEdge.add(outSize)));
@@ -104,7 +96,7 @@ public class OPECipher {
 
         if (inRange.size().compareTo(BigInteger.ONE) == 0) {
             TapeGen coins = new TapeGen(key, inRange.getMin());
-            BigInteger sampledCiphertext = Util.sampleUniform(outRange, coins);
+            BigInteger sampledCiphertext = Utils.sampleUniform(outRange, coins);
             if (sampledCiphertext.compareTo(chipertext) == 0) {
                 return inRange.getMin();
             } else {
@@ -112,7 +104,7 @@ public class OPECipher {
             }
         }
         TapeGen coins = new TapeGen(key, mid);
-        BigInteger x = Util.sampleHGD(inRange, outRange, mid, coins);
+        BigInteger x = Utils.sampleHGD(inRange, outRange, mid, coins);
 
         if (chipertext.compareTo(mid) <= 0) {
             return decrypted(chipertext, key,

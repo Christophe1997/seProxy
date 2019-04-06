@@ -45,9 +45,13 @@ public class SecurityTest {
 
     @Test
     public void OpeCipherTestShouldPass() throws Exception {
-        BigInteger plainText = BigInteger.valueOf(60);
-        OPECipher cipher = new OPECipher();
-//
-        System.out.println(cipher.encrypt(plainText, "key".getBytes()));
+        OPECipher cipher = new OPECipher(new Range(BigInteger.ZERO, BigInteger.valueOf(100)),
+                new Range(BigInteger.ZERO, BigInteger.valueOf(200)));
+        System.out.println(cipher.encrypt(BigInteger.valueOf(60), "key".getBytes()));
+        System.out.println(cipher.encrypt(BigInteger.valueOf(61), "key".getBytes()));
+        System.out.println(cipher.encrypt(BigInteger.valueOf(62), "key".getBytes()));
+        System.out.println(cipher.encrypt(BigInteger.valueOf(63), "key".getBytes()));
+        System.out.println(cipher.encrypt(BigInteger.valueOf(64), "key".getBytes()));
+        System.out.println(cipher.encrypt(BigInteger.valueOf(65), "key".getBytes()));
     }
 }

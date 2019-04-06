@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 
+/**
+ * Integer range for [min, max]
+ */
 public class Range {
 
     @Getter @Setter

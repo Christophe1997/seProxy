@@ -1,10 +1,7 @@
 package chris.seProxy.security.cipher.ope;
 
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
 
@@ -14,29 +11,29 @@ import java.util.stream.IntStream;
  * are drawn at random from an urn containing nn1 white
  * and nn2 black balls.
  */
-public class HGD {
+class HGD {
 
-    // TODO
-    public static class PRNG {
+    static class PRNG {
         private TapeGen coins;
         private int idx;
         private int[] cur;
 
-        public PRNG(TapeGen coins) {
+        PRNG(TapeGen coins) {
             this.coins = coins;
             idx = 0;
+            cur = coins.nextCoins();
         }
 
-        public double nextDouble(){
-            cur = coins.nextCoins();
+        double nextDouble(){
             BigInteger out = BigInteger.ZERO;
             for (int i : cur) {
                 out = out.shiftLeft(1).add(BigInteger.valueOf(i));
             }
+            cur = coins.nextCoins();
             return out.doubleValue() / (Math.pow(2, 32) - 1);
         }
 
-        public boolean nextBoolean() {
+        boolean nextBoolean() {
             boolean res = cur[idx++] == 1;
             if (idx >= 32) {
                 idx = 0;
@@ -46,7 +43,7 @@ public class HGD {
         }
     }
 
-    public static double rhyper(double sample, double good, double bad, TapeGen coins) {
+    static double rhyper(double sample, double good, double bad, TapeGen coins) {
         PRNG rng = new PRNG(coins);
         if (sample > 10) {
             return hypergeometricHrua(rng, good, bad, sample);
@@ -81,7 +78,7 @@ public class HGD {
         double minGoodBad = Math.min(good, bad);
         double popsize = good + bad;
         double maxGoodBad = Math.max(good, bad);
-        double m = Math.max(popsize, popsize - sample);
+        double m = Math.min(popsize, popsize - sample);
         double d4 = minGoodBad / popsize;
         double d5 = 1 - d4;
         double d6 = m * d4 + 0.5;
@@ -90,7 +87,7 @@ public class HGD {
         double d9 = Math.floor((m + 1) * (minGoodBad + 1) / (popsize + 2));
         double d10 = loggam(d9 + 1) + loggam(minGoodBad - d9 + 1) + loggam(m - d9 + 1)
                 + loggam(maxGoodBad - m + d9 + 1);
-        double d11 = Math.min(Math.min(m,minGoodBad) + 1, Math.floor(d6 + 16 * d7));
+        double d11 = Math.min(Math.min(m, minGoodBad) + 1, Math.floor(d6 + 16 * d7));
 
         double Z;
         while (true) {
@@ -98,7 +95,7 @@ public class HGD {
             double Y = rng.nextDouble();
             double W = d6 + d8 * (Y - 0.5) / X;
 
-            if (W < 0 || W > d11) continue;
+            if (W < 0 || W >= d11) continue;
 
             Z = Math.floor(W);
             double T = d10 - (loggam(Z + 1) + loggam(minGoodBad - Z + 1) + loggam(m - Z + 1)
