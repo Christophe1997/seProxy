@@ -1,5 +1,6 @@
-package chris.seProxy.util;
+package chris.seProxy.proxy;
 
+import chris.seProxy.util.PropManager;
 import lombok.Getter;
 
 import java.sql.Connection;
