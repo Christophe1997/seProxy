@@ -6,8 +6,8 @@ import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;
 import chris.seProxy.security.Property;
 import chris.seProxy.security.scheme.SecurityScheme;
-import chris.seProxy.sql.parser.mysql.MySqlParser;
-import chris.seProxy.sql.parser.mysql.MySqlParserBaseListener;
+import chris.seProxy.parser.mysql.MySqlParser;
+import chris.seProxy.parser.mysql.MySqlParserBaseListener;
 import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.RuleContext;
@@ -15,7 +15,6 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 // TODO more features

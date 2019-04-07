@@ -2,9 +2,10 @@ package chris.seProxy.rewriter.mysql;
 
 import chris.seProxy.rewriter.Rewriter;
 import chris.seProxy.security.scheme.BaseScheme;
+import chris.seProxy.security.scheme.OPEScheme;
 import chris.seProxy.security.scheme.SecurityScheme;
-import chris.seProxy.sql.parser.mysql.MySqlLexer;
-import chris.seProxy.sql.parser.mysql.MySqlParser;
+import chris.seProxy.parser.mysql.MySqlLexer;
+import chris.seProxy.parser.mysql.MySqlParser;
 import chris.seProxy.sql.parser.ParserWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +25,7 @@ public class MysqlRewriter implements Rewriter {
     @Getter @Setter
     private SecurityScheme securityScheme;
 
-    public MysqlRewriter() {
+    public MysqlRewriter() throws Exception {
         securityScheme = new BaseScheme();
         parserWrapper = new ParserWrapper(MySqlLexer.class, MySqlParser.class);
     }

@@ -1,7 +1,7 @@
 package chris.seProxyTest;
 
-import chris.seProxy.sql.parser.mysql.MySqlLexer;
-import chris.seProxy.sql.parser.mysql.MySqlParser;
+import chris.seProxy.parser.mysql.MySqlLexer;
+import chris.seProxy.parser.mysql.MySqlParser;
 import chris.seProxy.sql.parser.ParserWrapper;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;

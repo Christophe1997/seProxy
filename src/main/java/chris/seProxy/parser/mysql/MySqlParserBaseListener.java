@@ -1,5 +1,5 @@
 // Generated from MySqlParser.g4 by ANTLR 4.7.1
-package chris.seProxy.sql.parser.mysql;
+package chris.seProxy.parser.mysql;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
