@@ -1,7 +1,7 @@
-package chris.seProxy.util;
+package chris.seProxy.sql.parser;
 
 import chris.seProxy.exception.ParserInitFailure;
-import chris.seProxy.sql.parser.CaseChangingCharStream;
+import chris.seProxy.parser.CaseChangingCharStream;
 import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.*;
@@ -42,7 +42,7 @@ public class ParserWrapper {
      * @param input input Stream
      * @param lexerClass Lexer Class
      * @param parserClass Parser Class
-     * @throws Exception Throws exception from {@link chris.seProxy.util.ParserWrapper#init(CharStream)}
+     * @throws Exception Throws exception from {@link ParserWrapper#init(CharStream)}
      */
     public ParserWrapper(CharStream input,
                          Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass) throws Exception {
@@ -75,7 +75,7 @@ public class ParserWrapper {
 
     /**
      * reset with current input
-     * @throws Exception Throws exception from {@link chris.seProxy.util.ParserWrapper#init(CharStream)}
+     * @throws Exception Throws exception from {@link ParserWrapper#init(CharStream)}
      */
     public void reset() throws Exception {
         init(this.input);
@@ -84,7 +84,7 @@ public class ParserWrapper {
     /**
      * Change Input and reset
      * @param input input stream
-     * @throws Exception Throws exception from {@link chris.seProxy.util.ParserWrapper#init(CharStream)}
+     * @throws Exception Throws exception from {@link ParserWrapper#init(CharStream)}
      */
     public void setInput(CharStream input) throws Exception {
         this.input = input;

@@ -1,4 +1,4 @@
-package chris.seProxy.security.cipher.ope;
+package chris.seProxy.security.cipher.ciphers.boldyreva;
 
 import lombok.Getter;
 import lombok.Setter;

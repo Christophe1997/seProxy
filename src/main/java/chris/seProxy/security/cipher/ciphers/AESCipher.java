@@ -1,8 +1,8 @@
-package chris.seProxy.security.cipher;
+package chris.seProxy.security.cipher.ciphers;
 
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
-import chris.seProxy.util.KeyStoreWrapper;
+import chris.seProxy.security.cipher.IvCipher;
 import lombok.Getter;
 import lombok.Setter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -11,13 +11,12 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.Security;
 
-public class AESCipher {
+public class AESCipher implements IvCipher {
 
     static {
         Security.addProvider(new BouncyCastleProvider());

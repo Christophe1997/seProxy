@@ -5,7 +5,7 @@ import chris.seProxy.security.scheme.BaseScheme;
 import chris.seProxy.security.scheme.SecurityScheme;
 import chris.seProxy.sql.parser.mysql.MySqlLexer;
 import chris.seProxy.sql.parser.mysql.MySqlParser;
-import chris.seProxy.util.ParserWrapper;
+import chris.seProxy.sql.parser.ParserWrapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

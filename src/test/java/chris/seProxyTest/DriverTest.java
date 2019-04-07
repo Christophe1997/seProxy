@@ -1,6 +1,6 @@
 package chris.seProxyTest;
 
-import chris.seProxy.util.DriverManager;
+import chris.seProxy.proxy.DriverManager;
 import chris.seProxy.exception.ConnectionFailure;
 import chris.seProxy.util.PropManager;
 

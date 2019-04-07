@@ -2,14 +2,10 @@ package chris.seProxyTest;
 
 import chris.seProxy.sql.parser.mysql.MySqlLexer;
 import chris.seProxy.sql.parser.mysql.MySqlParser;
-import chris.seProxy.util.ParserWrapper;
+import chris.seProxy.sql.parser.ParserWrapper;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public class MysqlParserTest {
     private static final ParserWrapper parserWrapper = new ParserWrapper(MySqlLexer.class, MySqlParser.class);

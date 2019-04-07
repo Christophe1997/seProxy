@@ -1,5 +1,7 @@
-package chris.seProxy.security.cipher.ope;
+package chris.seProxy.security.cipher.ciphers.boldyreva;
 
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -7,6 +9,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.Key;
+import java.security.Security;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -14,6 +17,10 @@ import java.util.stream.IntStream;
  * Random byte stream generator(PRG, PRF) with HMAC and AES
  */
 class TapeGen {
+
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     private static final String MAC_ALGORITHM = "HmacSHA256";
     private static final String AES_ALGORITHM = "AES/CTR/PKCS5Padding";

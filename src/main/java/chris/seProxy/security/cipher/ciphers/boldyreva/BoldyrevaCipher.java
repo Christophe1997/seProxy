@@ -1,8 +1,10 @@
-package chris.seProxy.security.cipher.ope;
+package chris.seProxy.security.cipher.ciphers.boldyreva;
 
 
+import chris.seProxy.security.cipher.OPECipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.KeyGenerator;
 import java.math.BigDecimal;
@@ -14,7 +16,7 @@ import java.security.Security;
  * Reference: <a href="http://www.cc.gatech.edu/~aboldyre/papers/bclo.pdf">
  *     Boldyreva symmetric order-preserving encryption scheme</a>
  */
-public class OPECipher {
+public class BoldyrevaCipher implements OPECipher {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -26,13 +28,13 @@ public class OPECipher {
 
     private Range outRange;
 
-    public OPECipher() {
+    public BoldyrevaCipher() {
         inRange = new Range(BigInteger.ZERO, BigInteger.valueOf(2).pow(15).subtract(BigInteger.ONE));
         outRange = new Range(BigInteger.ZERO, BigInteger.valueOf(2).pow(31).subtract(BigInteger.ONE));
     }
 
     @Contract(pure = true)
-    public OPECipher(Range inRange, Range outRange) {
+    public BoldyrevaCipher(Range inRange, Range outRange) {
         this.inRange = inRange;
         this.outRange = outRange;
     }
@@ -50,7 +52,8 @@ public class OPECipher {
         return encrypt(plaintext, key, inRange, outRange);
     }
 
-    private BigInteger encrypt(BigInteger plaintext, byte[] key, Range inRange, Range outRange) throws Exception {
+    private BigInteger encrypt(BigInteger plaintext, byte[] key,
+                               @NotNull Range inRange, @NotNull Range outRange) throws Exception {
         BigInteger inSize = inRange.size();
         BigInteger outSize = outRange.size();
         BigInteger inEdge = inRange.getMin().subtract(BigInteger.ONE);
@@ -85,7 +88,8 @@ public class OPECipher {
         return decrypted(chipertext, key, inRange, outRange);
     }
 
-    private BigInteger decrypted(BigInteger chipertext, byte[] key, Range inRange, Range outRange) throws Exception {
+    private BigInteger decrypted(BigInteger chipertext, byte[] key,
+                                 @NotNull Range inRange, @NotNull Range outRange) throws Exception {
         BigInteger inSize = inRange.size();
         BigInteger outSize = outRange.size();
         BigInteger inEdge = inRange.getMin().subtract(BigInteger.ONE);
@@ -116,5 +120,4 @@ public class OPECipher {
                     new Range(mid.add(BigInteger.ONE), outEdge.add(outSize)));
         }
     }
-
 }

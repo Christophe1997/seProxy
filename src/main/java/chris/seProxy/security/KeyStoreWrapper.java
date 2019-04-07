@@ -1,5 +1,6 @@
-package chris.seProxy.util;
+package chris.seProxy.security;
 
+import chris.seProxy.util.PropManager;
 import lombok.Getter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 

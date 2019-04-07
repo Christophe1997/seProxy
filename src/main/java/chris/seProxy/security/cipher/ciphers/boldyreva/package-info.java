@@ -5,4 +5,4 @@
  * This implementation is inspired by another python implementation. see
  * <a href="https://github.com/tonyo/pyope">pyope</a>
  */
-package chris.seProxy.security.cipher.ope;
+package chris.seProxy.security.cipher.ciphers.boldyreva;

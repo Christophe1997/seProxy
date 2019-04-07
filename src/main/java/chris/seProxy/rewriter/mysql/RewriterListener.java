@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 // TODO more features
@@ -51,7 +52,9 @@ public class RewriterListener extends MySqlParserBaseListener {
             cols = ctx.columns.uid().stream().map(RuleContext::getText).collect(Collectors.toList());
         } else {
             cols = scheme.middleware().getColsFromTable(
-                    context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack.")));
+                    context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack.")))
+                    .orElseThrow(() -> new RewriteFailure("cols not found"));
+
         }
 
         context.setInsertStatementContext(new InsertStatementContext(cols));
@@ -77,6 +80,7 @@ public class RewriterListener extends MySqlParserBaseListener {
     public void exitExpressionOrDefault(MySqlParser.ExpressionOrDefaultContext ctx) {
         context.getInsertStatementContext().inc();
     }
+
     /**
      * FullColumnName is import to get the specific context, it always has table context, such as {@code table1.col1},
      * if not, it means the table context can get from earlier context. Now it only handle the select statement.
@@ -117,7 +121,8 @@ public class RewriterListener extends MySqlParserBaseListener {
             cols = ctx.columns.uid().stream().map(RuleContext::getText).collect(Collectors.toList());
         } else {
             cols = scheme.middleware().getColsFromTable(
-                    context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack")));
+                    context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack")))
+                    .orElseThrow(() -> new RewriteFailure("cols not found"));
         }
         context.getInsertStatementContext().setCols(cols);
     }

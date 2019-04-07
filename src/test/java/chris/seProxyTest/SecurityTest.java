@@ -2,22 +2,17 @@ package chris.seProxyTest;
 
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
-import chris.seProxy.security.cipher.AESCipher;
-import chris.seProxy.security.cipher.ope.*;
+import chris.seProxy.security.Property;
+import chris.seProxy.security.cipher.ciphers.AESCipher;
+import chris.seProxy.security.cipher.ciphers.boldyreva.*;
 import chris.seProxy.security.scheme.SecurityScheme;
-import org.apache.commons.math3.distribution.HypergeometricDistribution;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.Security;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,7 +40,7 @@ public class SecurityTest {
 
     @Test
     public void OpeCipherTestShouldPass() throws Exception {
-        OPECipher cipher = new OPECipher(new Range(BigInteger.ZERO, BigInteger.valueOf(100)),
+        BoldyrevaCipher cipher = new BoldyrevaCipher(new Range(BigInteger.ZERO, BigInteger.valueOf(100)),
                 new Range(BigInteger.ZERO, BigInteger.valueOf(200)));
         System.out.println(cipher.encrypt(BigInteger.valueOf(60), "key".getBytes()));
         System.out.println(cipher.encrypt(BigInteger.valueOf(61), "key".getBytes()));
@@ -53,5 +48,11 @@ public class SecurityTest {
         System.out.println(cipher.encrypt(BigInteger.valueOf(63), "key".getBytes()));
         System.out.println(cipher.encrypt(BigInteger.valueOf(64), "key".getBytes()));
         System.out.println(cipher.encrypt(BigInteger.valueOf(65), "key".getBytes()));
+    }
+
+
+    @Test
+    public void OPESchemeTestShouldPass() throws Exception {
+        System.out.println(Property.RANDOM.compareTo(Property.LIKE));
     }
 }

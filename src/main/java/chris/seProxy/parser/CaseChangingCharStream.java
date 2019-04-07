@@ -1,4 +1,4 @@
-package chris.seProxy.sql.parser;
+package chris.seProxy.parser;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
@@ -22,7 +22,7 @@ public class CaseChangingCharStream implements CharStream {
     /**
      * Constructs a new CaseChangingCharStream wrapping the given {@link CharStream} forcing
      * all characters to upper case or lower case.
-     * @param stream The stream to wrap.
+     * @param stream The stream to wrapQuote.
      * @param upper If true force each symbol to upper case, otherwise force to lower.
      */
     public CaseChangingCharStream(CharStream stream, boolean upper) {
