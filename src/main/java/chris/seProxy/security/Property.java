@@ -5,7 +5,7 @@ public enum Property {
 
     int level;
 
-    private Property(int level) {
+    Property(int level) {
         this.level = level;
     }
 
