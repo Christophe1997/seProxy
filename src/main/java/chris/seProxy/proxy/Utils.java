@@ -6,6 +6,8 @@ import chris.seProxy.db.Table;
 import chris.seProxy.proxy.agent.Agent;
 import chris.seProxy.proxy.agent.BaseAgent;
 import chris.seProxy.proxy.datasource.DataSourceManager;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,14 +22,15 @@ public class Utils {
         return Optional.ofNullable(map.get(key));
     }
 
-    public String allColumnsForCurrentDatabase() {
-        return  "select * from information_schema.columns" +
+    public static final String ALL_COLUMNS_FOR_CURRENT_DATABASE =
+        "select * from information_schema.columns" +
                 " where table_schema = DATABASE() order by table_name, ordinal_position";
-    }
 
-    public Database initDatabaseInfo(DataSourceManager manager) throws SQLException {
+    @NotNull
+    @Contract("_ -> new")
+    public static Database initDatabaseInfo(DataSourceManager manager) throws SQLException {
         Agent agent = new BaseAgent(manager);
-        ResultSet rs = agent.executeQuery(allColumnsForCurrentDatabase());
+        ResultSet rs = agent.executeQuery(ALL_COLUMNS_FOR_CURRENT_DATABASE);
         String dbName = null;
         HashMap<String, Table> tableMap = new HashMap<>();
         while (rs.next()) {

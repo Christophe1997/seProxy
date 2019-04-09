@@ -1,7 +1,7 @@
 package chris.seProxy.proxy.middleware;
 
-import chris.seProxy.proxy.agent.Agent;
 import chris.seProxy.proxy.Utils;
+import chris.seProxy.proxy.agent.BaseAgent;
 import chris.seProxy.security.Property;
 import chris.seProxy.security.KeyStoreWrapper;
 
@@ -15,7 +15,15 @@ public class BaseMiddleware implements Middleware {
     private HashMap<String, List<String>> tables;
     private HashMap<String, HashMap<String, String>> ivs;
     private KeyStoreWrapper keyStoreWrapper;
-    private Agent agent;
+    private BaseAgent agent;
+
+    public BaseMiddleware(BaseAgent agent, KeyStoreWrapper wrapper) {
+        this.agent = agent;
+        keyStoreWrapper = wrapper;
+        levels = agent.initLevelsInfo();
+        tables = agent.initTablesInfo();
+        ivs = agent.initIvsInfo();
+    }
 
     @Override
     public Optional<List<String>> getColsFromTable(String tableName) {
