@@ -2,6 +2,7 @@ package chris.seProxy.util;
 
 import lombok.Getter;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -31,12 +32,16 @@ public class PropManager {
     @Getter
     private String keyStorePassword;
 
-    public PropManager() throws Exception {
+    public PropManager() {
 
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         InputStream propFile = loader.getResourceAsStream(PROP_FILE);
         Properties prop = new Properties();
-        prop.load(propFile);
+        try {
+            prop.load(propFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         databaseClass = (String) prop.get("DB_CLASS");
         databaseUrl = (String) prop.get("DB_URL");
         databaseUsername = (String) prop.get("DB_UNAME");

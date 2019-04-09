@@ -39,6 +39,7 @@ public class OPEScheme extends BaseScheme {
 
     @Override
     public String encrypt(Context context, String val) {
+        if (val.toUpperCase().equals("NULL")) return val;
         StringBuilder builder = new StringBuilder();
         context.getCurrentTable().ifPresent(tableName -> {
             context.getCurrentCol().ifPresent(colName -> {

@@ -1,6 +1,6 @@
 package chris.seProxy.proxy.middleware;
 
-import chris.seProxy.proxy.Agent;
+import chris.seProxy.proxy.agent.Agent;
 import chris.seProxy.proxy.Utils;
 import chris.seProxy.security.Property;
 import chris.seProxy.security.KeyStoreWrapper;

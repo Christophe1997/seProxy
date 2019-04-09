@@ -1,6 +1,6 @@
 package chris.seProxy;
 
-import chris.seProxy.proxy.Agent;
+import chris.seProxy.proxy.agent.Agent;
 import chris.seProxy.rewriter.Rewriter;
 
 public class SeProxy {

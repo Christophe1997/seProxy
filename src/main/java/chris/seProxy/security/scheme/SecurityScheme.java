@@ -8,14 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Base64;
 
 /**
- * Core scheme for how to encrypt, which algorithm to use, is it necessary to adjust the database
+ * Core scheme for how to encrypt, which algorithm to use, is it necessary to adjust the db
  */
 public interface SecurityScheme {
 
     String encrypt(Context context, String val);
 
     /**
-     * Middleware that control the database
+     * Middleware that control the db
      * @return {@link Middleware}
      */
     Middleware middleware();

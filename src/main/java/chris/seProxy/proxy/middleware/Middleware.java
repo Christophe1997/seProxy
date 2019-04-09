@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Control the database, gather all the information that need for scheme
+ * Control the db, gather all the information that need for scheme
  */
 public interface Middleware {
 
