@@ -4,7 +4,7 @@ import chris.seProxy.db.Column;
 import chris.seProxy.db.Database;
 import chris.seProxy.db.Table;
 import chris.seProxy.proxy.agent.Agent;
-import chris.seProxy.proxy.agent.BaseAgent;
+import chris.seProxy.proxy.agent.OPEAgent;
 import chris.seProxy.proxy.datasource.DataSourceManager;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +29,7 @@ public class Utils {
     @NotNull
     @Contract("_ -> new")
     public static Database initDatabaseInfo(DataSourceManager manager) throws SQLException {
-        Agent agent = new BaseAgent(manager);
+        Agent agent = new OPEAgent(manager);
         ResultSet rs = agent.executeQuery(ALL_COLUMNS_FOR_CURRENT_DATABASE);
         String dbName = null;
         HashMap<String, Table> tableMap = new HashMap<>();

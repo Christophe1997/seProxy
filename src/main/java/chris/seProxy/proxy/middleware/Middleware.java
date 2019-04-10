@@ -1,6 +1,6 @@
 package chris.seProxy.proxy.middleware;
 
-import chris.seProxy.security.Property;
+import chris.seProxy.security.Level;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +17,11 @@ public interface Middleware {
      */
     Optional<List<String>> getColsFromTable(String tableName);
 
-    Optional<Property> getSpecificLevel(String tableName, String colName);
+    Optional<Level> getSpecificLevel(String tableName, String colName);
 
-    Optional<String> getSpecificIv(String tableName, String colName, Property property);
+    Optional<String> getSpecificIv(String tableName, String colName, Level level);
 
-    byte[] getSpecificKey(String tableName, String colName, Property property);
+    byte[] getSpecificKey(String tableName, String colName, Level level);
 
-    void adjustProperty(String tableName, String colName, Property property);
+    void adjustLevel(String tableName, String colName, Level newLevel);
 }

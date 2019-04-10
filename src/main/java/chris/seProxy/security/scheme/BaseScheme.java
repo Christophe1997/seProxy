@@ -1,6 +1,6 @@
 package chris.seProxy.security.scheme;
 
-import chris.seProxy.proxy.middleware.BaseMiddleware;
+import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.proxy.middleware.Middleware;
 import chris.seProxy.rewriter.context.Context;
 
@@ -13,7 +13,7 @@ public class BaseScheme implements SecurityScheme {
     private Middleware middleware;
 
     public BaseScheme() {
-        middleware = new BaseMiddleware();
+        middleware = new OPEMiddleware();
     }
 
     @Override

@@ -2,7 +2,7 @@ package chris.seProxyTest;
 
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
-import chris.seProxy.security.Property;
+import chris.seProxy.security.Level;
 import chris.seProxy.security.cipher.ciphers.AESCipher;
 import chris.seProxy.security.cipher.ciphers.boldyreva.*;
 import chris.seProxy.security.scheme.SecurityScheme;
@@ -53,6 +53,6 @@ public class SecurityTest {
 
     @Test
     public void OPESchemeTestShouldPass() throws Exception {
-        System.out.println(Property.RANDOM.compareTo(Property.LIKE));
+        System.out.println(Level.RANDOM.compareTo(Level.LIKE));
     }
 }

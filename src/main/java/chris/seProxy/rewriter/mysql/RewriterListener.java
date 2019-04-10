@@ -4,7 +4,7 @@ import chris.seProxy.exception.RewriteFailure;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;
-import chris.seProxy.security.Property;
+import chris.seProxy.security.Level;
 import chris.seProxy.security.scheme.SecurityScheme;
 import chris.seProxy.parser.mysql.MySqlParser;
 import chris.seProxy.parser.mysql.MySqlParserBaseListener;
@@ -30,7 +30,7 @@ public class RewriterListener extends MySqlParserBaseListener {
 
     private Context tempContext;
 
-    public RewriterListener(TokenStream stream, SecurityScheme scheme) {
+    RewriterListener(TokenStream stream, SecurityScheme scheme) {
         rewriter = new TokenStreamRewriter(stream);
         this.scheme = scheme;
         context = new Context();
@@ -177,7 +177,7 @@ public class RewriterListener extends MySqlParserBaseListener {
     @Override
     public void enterQuerySpecification(MySqlParser.QuerySpecificationContext ctx) {
         if (ctx.orderByClause() != null) {
-            context.getSelectStatementContext().setProperty(Property.ORDER);
+            context.getSelectStatementContext().setLevel(Level.ORDER);
         }
     }
 
@@ -216,62 +216,62 @@ public class RewriterListener extends MySqlParserBaseListener {
 
     @Override
     public void enterInPredicate(MySqlParser.InPredicateContext ctx) {
-        context.setCurrentProperty(Property.EQUALITY);
+        context.setCurrentLevel(Level.EQUALITY);
     }
 
     @Override
     public void exitInPredicate(MySqlParser.InPredicateContext ctx) {
-        context.clearCurrentProperty();
+        context.clearCurrentLevel();
     }
 
     /**
-     * With binary comparison operator, the operations property can be determined.
+     * With binary comparison operator, the operations level can be determined.
      */
     @Override
     public void enterBinaryComparasionPredicate(MySqlParser.BinaryComparasionPredicateContext ctx) {
         if (context.getSelectStatementContext() != null) {
             String op = ctx.comparisonOperator().getText();
             if (op.equals("=") || op.equals("!=")) {
-                context.setCurrentProperty(Property.EQUALITY);
+                context.setCurrentLevel(Level.EQUALITY);
             } else {
-                context.setCurrentProperty(Property.ORDER);
+                context.setCurrentLevel(Level.ORDER);
             }
         }
     }
 
     @Override
     public void exitBinaryComparasionPredicate(MySqlParser.BinaryComparasionPredicateContext ctx) {
-        context.clearCurrentProperty();
+        context.clearCurrentLevel();
     }
 
     @Override
     public void enterBetweenPredicate(MySqlParser.BetweenPredicateContext ctx) {
-        context.setCurrentProperty(Property.ORDER);
+        context.setCurrentLevel(Level.ORDER);
     }
 
     @Override
     public void exitBetweenPredicate(MySqlParser.BetweenPredicateContext ctx) {
-        context.clearCurrentProperty();
+        context.clearCurrentLevel();
     }
 
     @Override
     public void enterSoundsLikePredicate(MySqlParser.SoundsLikePredicateContext ctx) {
-        context.setCurrentProperty(Property.LIKE);
+        context.setCurrentLevel(Level.LIKE);
     }
 
     @Override
     public void exitSoundsLikePredicate(MySqlParser.SoundsLikePredicateContext ctx) {
-        context.clearCurrentProperty();
+        context.clearCurrentLevel();
     }
 
     @Override
     public void enterLikePredicate(MySqlParser.LikePredicateContext ctx) {
-        context.setCurrentProperty(Property.LIKE);
+        context.setCurrentLevel(Level.LIKE);
     }
 
     @Override
     public void exitLikePredicate(MySqlParser.LikePredicateContext ctx) {
-        context.clearCurrentProperty();
+        context.clearCurrentLevel();
     }
 
     // TODO support regexp

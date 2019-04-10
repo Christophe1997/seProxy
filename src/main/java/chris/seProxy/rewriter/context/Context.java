@@ -1,6 +1,6 @@
 package chris.seProxy.rewriter.context;
 
-import chris.seProxy.security.Property;
+import chris.seProxy.security.Level;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +15,7 @@ public class Context {
 
     private Stack<String> tableStack;
     private Stack<String> colStack;
-    private Stack<Property> propertyStack;
+    private Stack<Level> levelStack;
 
     @Getter @Setter
     private InsertStatementContext insertStatementContext;
@@ -26,7 +26,7 @@ public class Context {
     public Context() {
         tableStack = new Stack<>();
         colStack = new Stack<>();
-        propertyStack = new Stack<>();
+        levelStack = new Stack<>();
     }
 
     public Optional<String> getCurrentTable() {
@@ -45,9 +45,9 @@ public class Context {
         }
     }
 
-    public Optional<Property> getCurrentProperty() {
+    public Optional<Level> getCurrentLevel() {
         try {
-            return Optional.of(propertyStack.peek());
+            return Optional.of(levelStack.peek());
         } catch (EmptyStackException ex) {
             return Optional.empty();
         }
@@ -62,8 +62,8 @@ public class Context {
         colStack.push(colName);
     }
 
-    public void setCurrentProperty(Property p) {
-        propertyStack.push(p);
+    public void setCurrentLevel(Level p) {
+        levelStack.push(p);
     }
 
     public void clearCurrentTable() {
@@ -74,14 +74,14 @@ public class Context {
         tableStack.pop();
     }
 
-    public void clearCurrentProperty() {
-        propertyStack.pop();
+    public void clearCurrentLevel() {
+        levelStack.pop();
     }
 
     public void clearAll() {
         tableStack.clear();
         colStack.clear();
-        propertyStack.clear();
+        levelStack.clear();
         insertStatementContext = null;
         selectStatementContext = null;
     }

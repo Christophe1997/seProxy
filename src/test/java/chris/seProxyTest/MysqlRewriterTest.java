@@ -23,7 +23,7 @@ public class MysqlRewriterTest {
             StringBuilder builder = new StringBuilder();
             context.getCurrentTable().ifPresent(s -> builder.append(s).append("$"));
             context.getCurrentCol().ifPresent(s -> builder.append(s).append("$"));
-            context.getCurrentProperty().ifPresent(s -> builder.append(s).append("$"));
+            context.getCurrentLevel().ifPresent(s -> builder.append(s).append("$"));
             return builder.append(val).toString();
 
         }

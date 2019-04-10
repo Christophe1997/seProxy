@@ -1,15 +1,20 @@
 package chris.seProxy.security.scheme;
 
-import chris.seProxy.proxy.middleware.BaseMiddleware;
+import chris.seProxy.proxy.agent.OPEAgent;
+import chris.seProxy.proxy.datasource.DataSourceManager;
+import chris.seProxy.proxy.datasource.MysqlDataSourceManager;
+import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.proxy.middleware.Middleware;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
-import chris.seProxy.security.Property;
+import chris.seProxy.security.KeyStoreWrapper;
+import chris.seProxy.security.Level;
 import chris.seProxy.security.cipher.IvCipher;
 import chris.seProxy.security.cipher.OPECipher;
 import chris.seProxy.security.cipher.ciphers.AESCipher;
 import chris.seProxy.security.cipher.ciphers.boldyreva.BoldyrevaCipher;
+import chris.seProxy.util.PropManager;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -18,8 +23,8 @@ import static chris.seProxy.security.scheme.SecurityScheme.*;
 
 /**
  * This scheme only work for order preserving encryption, That means
- * it only support for {@link chris.seProxy.security.Property#EQUALITY} and
- * {@link chris.seProxy.security.Property#ORDER}
+ * it only support for {@link Level#EQUALITY} and
+ * {@link Level#ORDER}
  */
 public class OPEScheme extends BaseScheme {
     private Middleware middleware;
@@ -30,44 +35,45 @@ public class OPEScheme extends BaseScheme {
 
     private OPECipher opeCipher;
 
-    public OPEScheme() throws Exception {
-        middleware = new BaseMiddleware();
+    public OPEScheme(PropManager propManager) throws Exception {
         randomCipher = new AESCipher(Mode.CBC, Padding.PKCS5);
         determineCipher = new AESCipher(Mode.ECB, Padding.PKCS5);
         opeCipher = new BoldyrevaCipher();
+
+        DataSourceManager mysqlManager = new MysqlDataSourceManager(propManager);
+        OPEAgent agent = new OPEAgent(mysqlManager);
+        KeyStoreWrapper keyStoreWrapper = new KeyStoreWrapper(propManager);
+        middleware = new OPEMiddleware(agent, keyStoreWrapper, randomCipher, determineCipher, opeCipher);
     }
 
     @Override
     public String encrypt(Context context, String val) {
         if (val.toUpperCase().equals("NULL")) return val;
         StringBuilder builder = new StringBuilder();
-        context.getCurrentTable().ifPresent(tableName -> {
-            context.getCurrentCol().ifPresent(colName -> {
-                context.getCurrentProperty().ifPresent(minProperty -> {
-                    middleware.getSpecificLevel(tableName, colName).ifPresent(curProperty -> {
-                        if (minProperty.compareTo(curProperty) < 0) {
-                            byte[] key = middleware.getSpecificKey(tableName, colName, curProperty);
-                            byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, curProperty)
-                                    .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
-                            builder.append(dispatchEncrypt(val, curProperty, key, iv));
-                        } else {
-                            middleware.adjustProperty(tableName, colName, minProperty);
-                            byte[] key = middleware.getSpecificKey(tableName, colName, minProperty);
-                            byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, minProperty)
-                                    .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
-                            builder.append(dispatchEncrypt(val, minProperty, key, iv));
-                        }
-                    });
-                });
-            });
-        });
+        context.getCurrentTable().ifPresent(tableName ->
+                context.getCurrentCol().ifPresent(colName ->
+                        context.getCurrentLevel().ifPresent(minProperty ->
+                                middleware.getSpecificLevel(tableName, colName).ifPresent(curProperty -> {
+                            if (minProperty.compareTo(curProperty) < 0) {
+                                byte[] key = middleware.getSpecificKey(tableName, colName, curProperty);
+                                byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, curProperty)
+                                        .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
+                                builder.append(dispatchEncrypt(val, curProperty, key, iv));
+                            } else {
+                                middleware.adjustLevel(tableName, colName, minProperty);
+                                byte[] key = middleware.getSpecificKey(tableName, colName, minProperty);
+                                byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, minProperty)
+                                        .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
+                                builder.append(dispatchEncrypt(val, minProperty, key, iv));
+                            }
+                        }))));
         return builder.toString();
     }
 
-    private String dispatchEncrypt(String val, Property property, byte[] key, byte[] iv) {
+    private String dispatchEncrypt(String val, Level level, byte[] key, byte[] iv) {
         byte[] plaintext = unwrapQuote(val).getBytes(StandardCharsets.UTF_8);
         try {
-            switch (property) {
+            switch (level) {
                 case RANDOM:
                     return encodeAndWrap(randomCipher.encrypt(plaintext, key, iv));
                 case EQUALITY:

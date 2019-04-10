@@ -55,9 +55,10 @@ public class AESCipher implements IvCipher {
         return String.join("/", ALGORITHM, mode.toString(), padding.toString());
     }
 
+    @Override
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    private static Key toKey(byte[] key) {
+    public Key toKey(byte[] key) {
         return new SecretKeySpec(key, KEY_ALGORITHM);
     }
 

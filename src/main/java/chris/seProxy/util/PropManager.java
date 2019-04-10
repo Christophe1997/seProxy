@@ -48,6 +48,5 @@ public class PropManager {
         databasePassword = (String) prop.get("DB_PASSWORD");
         keyStorePath = (String) prop.get("KEYSTORE_PATH");
         keyStorePassword = (String) prop.get("KEYSTORE_PASSWORD");
-
     }
 }

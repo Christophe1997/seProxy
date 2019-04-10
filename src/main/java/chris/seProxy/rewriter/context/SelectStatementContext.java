@@ -1,6 +1,6 @@
 package chris.seProxy.rewriter.context;
 
-import chris.seProxy.security.Property;
+import chris.seProxy.security.Level;
 import chris.seProxy.util.Assoc;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,10 +18,10 @@ public class SelectStatementContext {
     private Assoc<String, String> tableAlias;
 
     /**
-     * operation property
+     * operation level
      */
     @Setter @Getter
-    private Property property;
+    private Level level;
 
     public SelectStatementContext() {
         tableAlias = new Assoc<>();

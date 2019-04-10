@@ -7,9 +7,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.KeyGenerator;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.security.Key;
 import java.security.Security;
 
 /**
@@ -43,6 +45,11 @@ public class BoldyrevaCipher implements OPECipher {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         kg.init(256);
         return kg.generateKey().getEncoded();
+    }
+
+    @Override
+    public Key toKey(byte[] key) {
+        return new SecretKeySpec(key, KEY_ALGORITHM);
     }
 
     public BigInteger encrypt(BigInteger plaintext, byte[] key) throws Exception {

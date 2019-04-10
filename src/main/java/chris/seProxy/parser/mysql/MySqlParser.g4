@@ -830,7 +830,7 @@ selectStatement
         )?
         orderByClause? limitClause? lockClause?                     #unionParenthesisSelect
     ;
-// TODO
+// TODO where to continue
 updateStatement
     : singleUpdateStatement | multipleUpdateStatement
     ;
