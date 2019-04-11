@@ -32,14 +32,14 @@ class TapeGen {
 
 
 
-    TapeGen(byte[] key, BigInteger data) throws Exception {
+    TapeGen(byte[] key, BigInteger data, byte[] iv) throws Exception {
         Mac sha256_HMAC = Mac.getInstance(MAC_ALGORITHM);
         Key k = new SecretKeySpec(key, MAC_ALGORITHM);
         sha256_HMAC.init(k);
         byte[] digit = sha256_HMAC.doFinal(data.toString().getBytes());
 
         cipher = Cipher.getInstance(AES_ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(digit, "AES"), new IvParameterSpec(new byte[16]));
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(digit, "AES"), new IvParameterSpec(iv));
         provideCoins = newCoins();
         idx = 0;
     }

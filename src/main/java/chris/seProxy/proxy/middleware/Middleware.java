@@ -17,11 +17,37 @@ public interface Middleware {
      */
     Optional<List<String>> getColsFromTable(String tableName);
 
+    /**
+     * Get the level of specific column
+     * @param tableName table name
+     * @param colName column name
+     * @return column's level
+     */
     Optional<Level> getSpecificLevel(String tableName, String colName);
 
+    /**
+     * Get the initial vector of specific column
+     * @param tableName table name
+     * @param colName column name
+     * @param level column level
+     * @return intial vector
+     */
     Optional<String> getSpecificIv(String tableName, String colName, Level level);
 
+    /**
+     * Get the key of specific column used in encryption
+     * @param tableName table name
+     * @param colName column name
+     * @param level column level
+     * @return encryption key used with specific condition
+     */
     byte[] getSpecificKey(String tableName, String colName, Level level);
 
+    /**
+     * Adjust column level to newlevel
+     * @param tableName table name
+     * @param colName column name
+     * @param newLevel new level
+     */
     void adjustLevel(String tableName, String colName, Level newLevel);
 }

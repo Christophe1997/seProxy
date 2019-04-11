@@ -1,10 +1,10 @@
 package chris.seProxy.security.cipher;
 
 import java.math.BigInteger;
-import java.security.Key;
 
-public interface OPECipher {
+public interface OPECipher extends KeyGenerable {
     BigInteger encrypt(BigInteger plaintext, byte[] key) throws Exception;
     BigInteger decrypted(BigInteger chipertext, byte[] key) throws Exception;
-    Key toKey(byte[] key);
+    BigInteger encrypt(BigInteger plaintext, byte[] key, byte[] iv) throws Exception;
+    BigInteger decrypted(BigInteger chipertext, byte[] key, byte[] iv) throws Exception;
 }

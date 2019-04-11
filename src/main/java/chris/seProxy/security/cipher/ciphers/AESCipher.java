@@ -44,6 +44,12 @@ public class AESCipher implements IvCipher {
         cipher = Cipher.getInstance(cipherAlgorithm, "BC");
     }
 
+    @Override
+    public int getBlockSize() {
+        return cipher.getBlockSize();
+    }
+
+    @Override
     public byte[] generateKey() throws Exception {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         kg.init(keyLength);

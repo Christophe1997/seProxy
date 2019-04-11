@@ -41,7 +41,13 @@ public class BoldyrevaCipher implements OPECipher {
         this.outRange = outRange;
     }
 
-    byte[] generateKey() throws Exception {
+    @Override
+    public int getBlockSize() {
+        return 16;
+    }
+
+    @Override
+    public byte[] generateKey() throws Exception {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         kg.init(256);
         return kg.generateKey().getEncoded();
@@ -53,13 +59,17 @@ public class BoldyrevaCipher implements OPECipher {
     }
 
     public BigInteger encrypt(BigInteger plaintext, byte[] key) throws Exception {
+        return encrypt(plaintext, key, new byte[getBlockSize()]);
+    }
+
+    public BigInteger encrypt(BigInteger plaintext, byte[] key, byte[] iv) throws Exception {
         if (!inRange.contains(plaintext)) {
             throw new RuntimeException(plaintext + " out of range: " + inRange);
         }
-        return encrypt(plaintext, key, inRange, outRange);
+        return encrypt(plaintext, key, iv);
     }
 
-    private BigInteger encrypt(BigInteger plaintext, byte[] key,
+        private BigInteger encrypt(BigInteger plaintext, byte[] key, byte[] iv,
                                @NotNull Range inRange, @NotNull Range outRange) throws Exception {
         BigInteger inSize = inRange.size();
         BigInteger outSize = outRange.size();
@@ -70,32 +80,36 @@ public class BoldyrevaCipher implements OPECipher {
         BigInteger mid = outEdge.add(new BigDecimal(outSize).divide(two, 10, RoundingMode.CEILING).toBigInteger());
 
         if (inRange.size().compareTo(BigInteger.ONE) == 0) {
-            TapeGen coins = new TapeGen(key, plaintext);
+            TapeGen coins = new TapeGen(key, plaintext, iv);
             return Utils.sampleUniform(outRange, coins);
         }
 
-        TapeGen coins = new TapeGen(key, mid);
+        TapeGen coins = new TapeGen(key, mid, iv);
         BigInteger x = Utils.sampleHGD(inRange, outRange, mid, coins);
         if (plaintext.compareTo(x) <= 0) {
-            return encrypt(plaintext, key,
+            return encrypt(plaintext, key, iv,
                     new Range(inEdge.add(BigInteger.ONE), x),
                     new Range(outEdge.add(BigInteger.ONE), mid));
         } else {
-            return encrypt(plaintext, key,
+            return encrypt(plaintext, key, iv,
                     new Range(x.add(BigInteger.ONE), inEdge.add(inSize)),
                     new Range(mid.add(BigInteger.ONE), outEdge.add(outSize)));
         }
     }
 
     public BigInteger decrypted(BigInteger chipertext, byte[] key) throws Exception {
+        return decrypted(chipertext, key, new byte[getBlockSize()]);
+    }
+
+    public BigInteger decrypted(BigInteger chipertext, byte[] key, byte[] iv) throws Exception {
         if (!outRange.contains(chipertext)) {
             throw new RuntimeException(chipertext + " out of range: " + outRange);
         }
 
-        return decrypted(chipertext, key, inRange, outRange);
+        return decrypted(chipertext, key, iv, inRange, outRange);
     }
 
-    private BigInteger decrypted(BigInteger chipertext, byte[] key,
+    private BigInteger decrypted(BigInteger chipertext, byte[] key, byte[] iv,
                                  @NotNull Range inRange, @NotNull Range outRange) throws Exception {
         BigInteger inSize = inRange.size();
         BigInteger outSize = outRange.size();
@@ -106,7 +120,7 @@ public class BoldyrevaCipher implements OPECipher {
         BigInteger mid = outEdge.add(new BigDecimal(outSize).divide(two, 10, RoundingMode.CEILING).toBigInteger());
 
         if (inRange.size().compareTo(BigInteger.ONE) == 0) {
-            TapeGen coins = new TapeGen(key, inRange.getMin());
+            TapeGen coins = new TapeGen(key, inRange.getMin(), iv);
             BigInteger sampledCiphertext = Utils.sampleUniform(outRange, coins);
             if (sampledCiphertext.compareTo(chipertext) == 0) {
                 return inRange.getMin();
@@ -114,15 +128,15 @@ public class BoldyrevaCipher implements OPECipher {
                 throw new RuntimeException("error in decryption");
             }
         }
-        TapeGen coins = new TapeGen(key, mid);
+        TapeGen coins = new TapeGen(key, mid, iv);
         BigInteger x = Utils.sampleHGD(inRange, outRange, mid, coins);
 
         if (chipertext.compareTo(mid) <= 0) {
-            return decrypted(chipertext, key,
+            return decrypted(chipertext, key, iv,
                     new Range(x.add(BigInteger.ONE), x),
                     new Range(outEdge.add(BigInteger.ONE), mid));
         } else {
-            return decrypted(chipertext, key,
+            return decrypted(chipertext, key, iv,
                     new Range(x.add(BigInteger.ONE), inEdge.add(inSize)),
                     new Range(mid.add(BigInteger.ONE), outEdge.add(outSize)));
         }

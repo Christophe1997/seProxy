@@ -67,4 +67,13 @@ public class Utils {
         }
         return new Database(dbName, tableMap);
     }
+
+    public static ResultSet selectCol(Agent agent, String tableName, String colName) {
+        return agent.executeQuery(String.format("SELECT id, %s FROM %s", colName, tableName));
+    }
+
+    public static void updateCol(Agent agent, String tableName, String colName, String id, String newVal) {
+        agent.executeUpdate(String.format("UPDATE %s SET %s=%s WHERE id=%s",
+                tableName, colName, newVal, id));
+    }
 }
