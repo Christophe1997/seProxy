@@ -7,17 +7,23 @@ import chris.seProxy.util.PropManager;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DriverTest {
 
     public static void main(String[] args) throws Exception {
         DataSourceManager dataSourceManager = new MysqlDataSourceManager(new PropManager());
-        Connection coon = dataSourceManager.getConnection().orElseThrow(() -> new ConnectionFailure("connection failed"));
-        Statement stmt = coon.createStatement();
-        ResultSet rs = stmt.executeQuery("select * from student limit 10");
-        while (rs.next()) {
-            System.out.println(rs.getString(1));
-        }
+        dataSourceManager.getConnection().ifPresent(conn -> {
+            try {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery("select * from student limit 10");
+                while (rs.next()) {
+                    System.out.println(rs.getString(1));
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 }

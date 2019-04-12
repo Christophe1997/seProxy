@@ -1,6 +1,6 @@
 package chris.seProxy.sql.parser;
 
-import chris.seProxy.exception.ParserInitFailure;
+import chris.seProxy.parser.ParserInitFailure;
 import chris.seProxy.parser.CaseChangingCharStream;
 import lombok.Getter;
 import lombok.Setter;

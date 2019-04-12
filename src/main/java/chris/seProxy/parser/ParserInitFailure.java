@@ -1,4 +1,4 @@
-package chris.seProxy.exception;
+package chris.seProxy.parser;
 
 /**
  * Exception for SQL parser init failure

@@ -1,6 +1,6 @@
 package chris.seProxy.rewriter.mysql;
 
-import chris.seProxy.exception.RewriteFailure;
+import chris.seProxy.rewriter.RewriteFailure;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;

@@ -1,5 +1,6 @@
 package chris.seProxy.proxy.middleware;
 
+import chris.seProxy.db.Database;
 import chris.seProxy.proxy.Utils;
 import chris.seProxy.proxy.agent.OPEAgent;
 import chris.seProxy.security.Level;
@@ -103,6 +104,14 @@ public class OPEMiddleware implements Middleware {
                 }));
     }
 
+    @Override
+    public void initDataBase() {
+        Database database = agent.database();
+        database.tables().forEach(table -> {
+
+        });
+    }
+
     /**
      * Handle RANDOM -> EQUALITY, RANDOM -> ORDER
      */
@@ -115,6 +124,7 @@ public class OPEMiddleware implements Middleware {
                 byte[] decryptedVal = randomCipher.decrypt(base64Decode(val), key, iv);
                 switch (newLevel) {
                     case EQUALITY:
+                        agent.updateLevel(tableName, colName, Level.EQUALITY);
                         byte[] newKey1 = determineCipher.generateKey();
                         keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
                                 (SecretKey) determineCipher.toKey(newKey1));
@@ -122,6 +132,7 @@ public class OPEMiddleware implements Middleware {
                         Utils.updateCol(agent, tableName, colName, id, newVal1);
                         break;
                     case ORDER:
+                        agent.updateLevel(tableName, colName, Level.ORDER);
                         byte[] newKey2 = opeCipher.generateKey();
                         keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
                                 (SecretKey) opeCipher.toKey(newKey2));
@@ -163,5 +174,6 @@ public class OPEMiddleware implements Middleware {
             ex.printStackTrace();
         }
     }
+
 
 }

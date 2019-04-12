@@ -1,4 +1,4 @@
-package chris.seProxy.exception;
+package chris.seProxy.rewriter;
 
 /**
  * Exception for rewrite failure

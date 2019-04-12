@@ -35,6 +35,10 @@ public class OPEAgent implements Agent {
         }
     }
 
+    @Override
+    public Database database() {
+        return database;
+    }
 
     @Override
     public void executeUpdate(String sql) {
@@ -59,7 +63,7 @@ public class OPEAgent implements Agent {
             try (Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(sql);
                 wrapper.set(rs);
-            }catch (SQLException ex) {
+            } catch (SQLException ex) {
                 printSQLException(ex);
             }
         });
@@ -103,7 +107,9 @@ public class OPEAgent implements Agent {
             String colName = rs.getString(1);
             String iv = rs.getString(2);
             String level = rs.getString(3);
-            col.add(colName); col.add(iv); col.add(level);
+            col.add(colName);
+            col.add(iv);
+            col.add(level);
             configMap.put(tableName, col);
         }
     }
@@ -144,16 +150,22 @@ public class OPEAgent implements Agent {
 
     /**
      * Update level
-     * @param level encryption level
+     *
+     * @param tableName table name
+     * @param colName   column name
+     * @param level     column level
      */
-    public void updatelevel(String tableName, String colName, Level level) {
+    public void updateLevel(String tableName, String colName, Level level) {
         String sql = String.format("UPDATE config set level=%s WHERE table=%s AND column=%s", level, tableName, colName);
         executeUpdate(sql);
     }
 
     /**
-     * Update iv
-     * @param iv encryption iv
+     * Update initial vector
+     *
+     * @param tableName table name
+     * @param colName   column name
+     * @param iv        initial vector
      */
     public void updateIv(String tableName, String colName, String iv) {
         String sql = String.format("UPDATE config set iv=%s WHERE table=%s AND column=%s", iv, tableName, colName);

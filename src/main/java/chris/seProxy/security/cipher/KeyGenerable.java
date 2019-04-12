@@ -5,8 +5,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public interface KeyGenerable {
+
     int getBlockSize();
+
     byte[] generateKey() throws Exception;
+
     Key toKey(byte[] key);
 
     default byte[] generateIv() {

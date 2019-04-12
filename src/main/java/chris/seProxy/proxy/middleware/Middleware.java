@@ -12,6 +12,7 @@ public interface Middleware {
 
     /**
      * Get all the columns name from table
+     *
      * @param tableName table name
      * @return columns name list
      */
@@ -19,35 +20,44 @@ public interface Middleware {
 
     /**
      * Get the level of specific column
+     *
      * @param tableName table name
-     * @param colName column name
+     * @param colName   column name
      * @return column's level
      */
     Optional<Level> getSpecificLevel(String tableName, String colName);
 
     /**
      * Get the initial vector of specific column
+     *
      * @param tableName table name
-     * @param colName column name
-     * @param level column level
+     * @param colName   column name
+     * @param level     column level
      * @return intial vector
      */
     Optional<String> getSpecificIv(String tableName, String colName, Level level);
 
     /**
-     * Get the key of specific column used in encryption
+     * Get the key of specific column used in encryption, it should handle the exception if key not exist.
+     *
      * @param tableName table name
-     * @param colName column name
-     * @param level column level
+     * @param colName   column name
+     * @param level     column level
      * @return encryption key used with specific condition
      */
     byte[] getSpecificKey(String tableName, String colName, Level level);
 
     /**
      * Adjust column level to newlevel
+     *
      * @param tableName table name
-     * @param colName column name
-     * @param newLevel new level
+     * @param colName   column name
+     * @param newLevel  new level
      */
     void adjustLevel(String tableName, String colName, Level newLevel);
+
+    /**
+     * Init database for scheme use
+     */
+    void initDataBase();
 }
