@@ -1,18 +1,16 @@
 package chris.seProxyTest;
 
-import chris.seProxy.exception.ConnectionFailure;
 import chris.seProxy.proxy.datasource.DataSourceManager;
 import chris.seProxy.proxy.datasource.MysqlDataSourceManager;
 import chris.seProxy.util.PropManager;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DriverTest {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         DataSourceManager dataSourceManager = new MysqlDataSourceManager(new PropManager());
         dataSourceManager.getConnection().ifPresent(conn -> {
             try {
