@@ -2,7 +2,6 @@ package chris.seProxy.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Optional;
 
 /**
  * Associated list, such as [(a1, b1), (a2, b2), ...]
+ *
  * @param <A> first type a or Key
  * @param <B> second type b or Value
  */
@@ -51,7 +51,7 @@ public class Assoc<A, B> implements Iterable<Assoc<A, B>.AssocElem> {
     }
 
     public Optional<A> findFst(B snd) {
-        for(AssocElem e : data) {
+        for (AssocElem e : data) {
             if (e.snd.equals(snd)) {
                 return Optional.of(e.fst);
             }

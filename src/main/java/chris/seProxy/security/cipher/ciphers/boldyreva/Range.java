@@ -11,9 +11,11 @@ import java.math.BigInteger;
  */
 public class Range {
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private BigInteger min;
-    @Getter @Setter
+    @Getter
+    @Setter
     private BigInteger max;
 
 

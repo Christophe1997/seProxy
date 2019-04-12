@@ -26,7 +26,8 @@ public class AESCipher implements IvCipher {
 
     private static final String ALGORITHM = "AES";
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private int keyLength = 256;
 
     @Getter

@@ -24,7 +24,7 @@ class HGD {
             cur = coins.nextCoins();
         }
 
-        double nextDouble(){
+        double nextDouble() {
             BigInteger out = BigInteger.ZERO;
             for (int i : cur) {
                 out = out.shiftLeft(1).add(BigInteger.valueOf(i));
@@ -60,7 +60,7 @@ class HGD {
         double K = sample;
         while (Y > 0) {
             double U = rng.nextDouble();
-            Y -= Math.floor(U + Y/(d1 + K));
+            Y -= Math.floor(U + Y / (d1 + K));
             K -= 1;
             if (K == 0) break;
         }
@@ -143,7 +143,7 @@ class HGD {
             g10 *= x2;
             g10 += a[i];
         }
-        double g1 = g10/x0 + 0.5 * Math.log(xp) + (x0 - 0.5) * Math.log(x0) - x0;
+        double g1 = g10 / x0 + 0.5 * Math.log(xp) + (x0 - 0.5) * Math.log(x0) - x0;
         if (x <= 7) {
             for (int i : IntStream.range(1, n + 1).toArray()) {
                 g1 -= Math.log(x0 - 1);

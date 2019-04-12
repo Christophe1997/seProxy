@@ -4,6 +4,9 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+/**
+ * Interface used for cipher toplevel
+ */
 public interface KeyGenerable {
 
     int getBlockSize();

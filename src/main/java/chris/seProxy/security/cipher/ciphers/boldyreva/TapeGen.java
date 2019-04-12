@@ -2,6 +2,7 @@ package chris.seProxy.security.cipher.ciphers.boldyreva;
 
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -10,7 +11,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.Security;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 /**
@@ -31,8 +34,7 @@ class TapeGen {
     private int idx;
 
 
-
-    TapeGen(byte[] key, BigInteger data, byte[] iv) throws Exception {
+    TapeGen(byte[] key, @NotNull BigInteger data, byte[] iv) throws Exception {
         Mac sha256_HMAC = Mac.getInstance(MAC_ALGORITHM);
         Key k = new SecretKeySpec(key, MAC_ALGORITHM);
         sha256_HMAC.init(k);

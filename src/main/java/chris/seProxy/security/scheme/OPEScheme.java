@@ -3,7 +3,6 @@ package chris.seProxy.security.scheme;
 import chris.seProxy.proxy.agent.OPEAgent;
 import chris.seProxy.proxy.datasource.DataSourceManager;
 import chris.seProxy.proxy.datasource.MysqlDataSourceManager;
-import chris.seProxy.proxy.middleware.Middleware;
 import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.security.Block.Mode;
