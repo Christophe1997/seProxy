@@ -3,8 +3,8 @@ package chris.seProxy.security.scheme;
 import chris.seProxy.proxy.agent.OPEAgent;
 import chris.seProxy.proxy.datasource.DataSourceManager;
 import chris.seProxy.proxy.datasource.MysqlDataSourceManager;
-import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.proxy.middleware.Middleware;
+import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
@@ -27,7 +27,7 @@ import static chris.seProxy.security.scheme.SecurityScheme.*;
  * {@link Level#ORDER}
  */
 public class OPEScheme extends BaseScheme {
-    private Middleware middleware;
+    private OPEMiddleware middleware;
 
     private IvCipher randomCipher;
 
@@ -44,7 +44,20 @@ public class OPEScheme extends BaseScheme {
         OPEAgent agent = new OPEAgent(mysqlManager);
         KeyStoreWrapper keyStoreWrapper = new KeyStoreWrapper(propManager);
         middleware = new OPEMiddleware(agent, keyStoreWrapper, randomCipher, determineCipher, opeCipher);
+        if (!propManager.isInit()) {
+            middleware.initDatabase();
+        }
+        middleware.init();
     }
+//    rewrite col name code
+//    @Override
+//    public String rewriteCol(Context context, String colName) {
+//        String tableName = context.getCurrentTable().orElseThrow(
+//                () -> new RuntimeException("no table set in context"));
+//        Level level = middleware.getSpecificLevel(tableName, colName).orElseThrow(
+//                () -> new RuntimeException("no level set for " + tableName + "(" + colName + ")"));
+//        return colName + "_" + level;
+//    }
 
     @Override
     public String encrypt(Context context, String val) {
@@ -54,19 +67,19 @@ public class OPEScheme extends BaseScheme {
                 context.getCurrentCol().ifPresent(colName ->
                         context.getCurrentLevel().ifPresent(minProperty ->
                                 middleware.getSpecificLevel(tableName, colName).ifPresent(curProperty -> {
-                            if (minProperty.compareTo(curProperty) < 0) {
-                                byte[] key = middleware.getSpecificKey(tableName, colName, curProperty);
-                                byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, curProperty)
-                                        .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
-                                builder.append(dispatchEncrypt(val, curProperty, key, iv));
-                            } else {
-                                middleware.adjustLevel(tableName, colName, minProperty);
-                                byte[] key = middleware.getSpecificKey(tableName, colName, minProperty);
-                                byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, minProperty)
-                                        .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
-                                builder.append(dispatchEncrypt(val, minProperty, key, iv));
-                            }
-                        }))));
+                                    if (minProperty.compareTo(curProperty) < 0) {
+                                        byte[] key = middleware.getSpecificKey(tableName, colName, curProperty);
+                                        byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, curProperty)
+                                                .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
+                                        builder.append(dispatchEncrypt(val, curProperty, key, iv));
+                                    } else {
+                                        middleware.adjustLevel(tableName, colName, minProperty);
+                                        byte[] key = middleware.getSpecificKey(tableName, colName, minProperty);
+                                        byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, minProperty)
+                                                .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
+                                        builder.append(dispatchEncrypt(val, minProperty, key, iv));
+                                    }
+                                }))));
         return builder.toString();
     }
 

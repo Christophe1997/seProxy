@@ -16,22 +16,28 @@ public interface SecurityScheme {
 
     /**
      * Middleware that control the db
+     *
      * @return {@link Middleware}
      */
     Middleware middleware();
 
+//    default String rewriteCol(Context context, String colName) {
+//        return colName;
+//    };
+
     @NotNull
     @Contract("_ -> new")
-    static String base64Encode (byte[] data) {
+    static String base64Encode(byte[] data) {
         return new String(Base64.getEncoder().encode(data));
     }
 
-    static byte[] base64Decode (@NotNull String data) {
+    static byte[] base64Decode(@NotNull String data) {
         return Base64.getDecoder().decode(data.getBytes());
     }
 
     /**
      * Remove `"` or `'` from a string literal
+     *
      * @param s: string may have `'` or `"`
      * @return unwrapped string
      */
@@ -45,6 +51,7 @@ public interface SecurityScheme {
 
     /**
      * Add `"` to a string, build a string literal
+     *
      * @param s: string need wrapQuote
      * @return wrapped string
      */

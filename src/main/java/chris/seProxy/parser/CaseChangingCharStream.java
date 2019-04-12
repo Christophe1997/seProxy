@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.misc.Interval;
 
 /**
  * See <a href="https://github.com/antlr/antlr4/blob/master/doc/case-insensitive-lexing.md">
- *     Case-Insensitive Lexing</a>
+ * Case-Insensitive Lexing</a>
  * This class supports case-insensitive lexing by wrapping an existing
  * {@link CharStream} and forcing the lexer to see either upper or
  * lowercase characters. Grammar literals should then be either upper or
@@ -14,18 +14,19 @@ import org.antlr.v4.runtime.misc.Interval;
  * 'BEGIN' if constructor parameter upper=true but getText() would return
  * 'BeGiN'.
  */
-public class CaseChangingCharStream implements CharStream {
+class CaseChangingCharStream implements CharStream {
 
-    final CharStream stream;
-    final boolean upper;
+    private final CharStream stream;
+    private final boolean upper;
 
     /**
      * Constructs a new CaseChangingCharStream wrapping the given {@link CharStream} forcing
      * all characters to upper case or lower case.
+     *
      * @param stream The stream to wrapQuote.
-     * @param upper If true force each symbol to upper case, otherwise force to lower.
+     * @param upper  If true force each symbol to upper case, otherwise force to lower.
      */
-    public CaseChangingCharStream(CharStream stream, boolean upper) {
+    CaseChangingCharStream(CharStream stream, boolean upper) {
         this.stream = stream;
         this.upper = upper;
     }

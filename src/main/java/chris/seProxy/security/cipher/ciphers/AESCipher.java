@@ -39,9 +39,14 @@ public class AESCipher implements IvCipher {
         cipher = Cipher.getInstance(cipherAlgorithm, "BC");
     }
 
-    public AESCipher(Mode mode, Padding padding) throws Exception {
-        cipherAlgorithm = toCipherAlgorithm(mode, padding);
-        cipher = Cipher.getInstance(cipherAlgorithm, "BC");
+    public AESCipher(Mode mode, Padding padding) {
+        try {
+            cipherAlgorithm = toCipherAlgorithm(mode, padding);
+            cipher = Cipher.getInstance(cipherAlgorithm, "BC");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
     }
 
     @Override
@@ -50,10 +55,16 @@ public class AESCipher implements IvCipher {
     }
 
     @Override
-    public byte[] generateKey() throws Exception {
-        KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
-        kg.init(keyLength);
-        return kg.generateKey().getEncoded();
+    public byte[] generateKey() {
+        try {
+            KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
+            kg.init(keyLength);
+            return kg.generateKey().getEncoded();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        return new byte[getBlockSize()];
     }
 
     @NotNull

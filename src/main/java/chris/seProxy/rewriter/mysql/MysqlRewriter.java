@@ -1,12 +1,11 @@
 package chris.seProxy.rewriter.mysql;
 
-import chris.seProxy.rewriter.Rewriter;
-import chris.seProxy.security.scheme.BaseScheme;
-import chris.seProxy.security.scheme.OPEScheme;
-import chris.seProxy.security.scheme.SecurityScheme;
+import chris.seProxy.parser.ParserWrapper;
 import chris.seProxy.parser.mysql.MySqlLexer;
 import chris.seProxy.parser.mysql.MySqlParser;
-import chris.seProxy.sql.parser.ParserWrapper;
+import chris.seProxy.rewriter.Rewriter;
+import chris.seProxy.security.scheme.BaseScheme;
+import chris.seProxy.security.scheme.SecurityScheme;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,13 +18,15 @@ import java.util.Optional;
 @AllArgsConstructor
 public class MysqlRewriter implements Rewriter {
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private ParserWrapper parserWrapper;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private SecurityScheme securityScheme;
 
-    public MysqlRewriter() throws Exception {
+    public MysqlRewriter() {
         securityScheme = new BaseScheme();
         parserWrapper = new ParserWrapper(MySqlLexer.class, MySqlParser.class);
     }

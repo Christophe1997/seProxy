@@ -1,7 +1,5 @@
-package chris.seProxy.sql.parser;
+package chris.seProxy.parser;
 
-import chris.seProxy.parser.ParserInitFailure;
-import chris.seProxy.parser.CaseChangingCharStream;
 import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.*;
@@ -11,9 +9,11 @@ import org.antlr.v4.runtime.*;
  */
 public class ParserWrapper {
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private Class<? extends Lexer> lexerClass;
-    @Getter @Setter
+    @Getter
+    @Setter
     private Class<? extends Parser> parserClass;
 
     @Getter
@@ -27,7 +27,8 @@ public class ParserWrapper {
 
     /**
      * Specify used Lexer class and Parser class.
-     * @param lexerClass Lexer Class
+     *
+     * @param lexerClass  Lexer Class
      * @param parserClass Parser Class
      */
     public ParserWrapper(Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass) {
@@ -39,8 +40,9 @@ public class ParserWrapper {
 
     /**
      * Specify used Lexer class and Parser class and init it with input
-     * @param input input Stream
-     * @param lexerClass Lexer Class
+     *
+     * @param input       input Stream
+     * @param lexerClass  Lexer Class
      * @param parserClass Parser Class
      * @throws Exception Throws exception from {@link ParserWrapper#init(CharStream)}
      */
@@ -55,6 +57,7 @@ public class ParserWrapper {
 
     /**
      * init with input
+     *
      * @param input input Stream
      * @throws Exception Throws a {@link ParserInitFailure} for some reasons, such as NoSuchMethodException.
      */
@@ -75,6 +78,7 @@ public class ParserWrapper {
 
     /**
      * reset with current input
+     *
      * @throws Exception Throws exception from {@link ParserWrapper#init(CharStream)}
      */
     public void reset() throws Exception {
@@ -83,6 +87,7 @@ public class ParserWrapper {
 
     /**
      * Change Input and reset
+     *
      * @param input input stream
      * @throws Exception Throws exception from {@link ParserWrapper#init(CharStream)}
      */

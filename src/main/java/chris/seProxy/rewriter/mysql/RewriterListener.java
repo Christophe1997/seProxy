@@ -1,13 +1,13 @@
 package chris.seProxy.rewriter.mysql;
 
+import chris.seProxy.parser.mysql.MySqlParser;
+import chris.seProxy.parser.mysql.MySqlParserBaseListener;
 import chris.seProxy.rewriter.RewriteFailure;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.rewriter.context.InsertStatementContext;
 import chris.seProxy.rewriter.context.SelectStatementContext;
 import chris.seProxy.security.Level;
 import chris.seProxy.security.scheme.SecurityScheme;
-import chris.seProxy.parser.mysql.MySqlParser;
-import chris.seProxy.parser.mysql.MySqlParserBaseListener;
 import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.RuleContext;
@@ -92,13 +92,19 @@ public class RewriterListener extends MySqlParserBaseListener {
                         s -> context.setCurrentTable(s)
                 );
             }
-            context.setCurrentCol(ctx.dottedId(0).getText().substring(1));
+            String curCol = ctx.dottedId(0).getText().substring(1);
+            context.setCurrentCol(curCol);
+//            rewriter.replace(ctx.dottedId(0).getStart(), ctx.dottedId(1).getStop(),
+//                    scheme.rewriteCol(context, curCol));
         } else {
             if (context.getSelectStatementContext() != null) {
                 context.setCurrentTable(context.getSelectStatementContext().getDefaultTable().orElseThrow(() ->
                         new RewriteFailure("no table declared")));
             }
-            context.setCurrentCol(ctx.uid().getText());
+            String curCol = ctx.uid().getText();
+            context.setCurrentCol(curCol);
+//            rewriter.replace(ctx.uid().getStart(), ctx.uid().getStop(),
+//                    scheme.rewriteCol(context, curCol));
         }
     }
 

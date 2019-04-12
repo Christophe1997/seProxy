@@ -1,6 +1,9 @@
-package chris.seProxy.db;
+package chris.seProxy.proxy.db;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,12 +13,13 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Database {
-    @Getter @Setter
+    @Getter
+    @Setter
     private String databaseName;
 
     private HashMap<String, Table> tableMap;
 
-    public List<Table> tables() {
+    public List<Table> getTables() {
         return new ArrayList<>(tableMap.values());
     }
 

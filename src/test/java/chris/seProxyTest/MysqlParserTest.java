@@ -1,8 +1,8 @@
 package chris.seProxyTest;
 
+import chris.seProxy.parser.ParserWrapper;
 import chris.seProxy.parser.mysql.MySqlLexer;
 import chris.seProxy.parser.mysql.MySqlParser;
-import chris.seProxy.sql.parser.ParserWrapper;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class MysqlParserTest {
     private static final ParserWrapper parserWrapper = new ParserWrapper(MySqlLexer.class, MySqlParser.class);
 
-    public static void parser(CharStream input) throws Exception {
+    private static void parser(CharStream input) throws Exception {
         parserWrapper.init(input);
         MySqlParser parser = (MySqlParser) parserWrapper.getParser();
         ParseTree tree = parser.root();

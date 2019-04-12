@@ -1,4 +1,4 @@
-package chris.seProxy.db;
+package chris.seProxy.proxy.db;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,4 +26,12 @@ public class Column {
     private String privileges;
     private String columnComment;
     private String generationExpression;
+
+    public boolean isVarchar() {
+        return columnType.toUpperCase().contains("VARCHAR");
+    }
+
+    public boolean isInt() {
+        return columnType.toUpperCase().contains("INT");
+    }
 }

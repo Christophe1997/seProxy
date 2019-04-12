@@ -32,6 +32,9 @@ public class PropManager {
     @Getter
     private String keyStorePassword;
 
+    @Getter
+    private boolean isInit;
+
     public PropManager() {
 
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -48,5 +51,6 @@ public class PropManager {
         databasePassword = (String) prop.get("DB_PASSWORD");
         keyStorePath = (String) prop.get("KEYSTORE_PATH");
         keyStorePassword = (String) prop.get("KEYSTORE_PASSWORD");
+        isInit = (boolean) prop.get("IS_DB_INIT");
     }
 }

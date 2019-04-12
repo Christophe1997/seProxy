@@ -16,7 +16,7 @@ import java.security.Security;
 
 /**
  * Reference: <a href="http://www.cc.gatech.edu/~aboldyre/papers/bclo.pdf">
- *     Boldyreva symmetric order-preserving encryption scheme</a>
+ * Boldyreva symmetric order-preserving encryption scheme</a>
  */
 public class BoldyrevaCipher implements OPECipher {
 
@@ -47,10 +47,16 @@ public class BoldyrevaCipher implements OPECipher {
     }
 
     @Override
-    public byte[] generateKey() throws Exception {
-        KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
-        kg.init(256);
-        return kg.generateKey().getEncoded();
+    public byte[] generateKey() {
+        try {
+            KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
+            kg.init(256);
+            return kg.generateKey().getEncoded();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        return new byte[getBlockSize()];
     }
 
     @Override
@@ -58,18 +64,20 @@ public class BoldyrevaCipher implements OPECipher {
         return new SecretKeySpec(key, KEY_ALGORITHM);
     }
 
+    @Override
     public BigInteger encrypt(BigInteger plaintext, byte[] key) throws Exception {
         return encrypt(plaintext, key, new byte[getBlockSize()]);
     }
 
+    @Override
     public BigInteger encrypt(BigInteger plaintext, byte[] key, byte[] iv) throws Exception {
         if (!inRange.contains(plaintext)) {
             throw new RuntimeException(plaintext + " out of range: " + inRange);
         }
-        return encrypt(plaintext, key, iv);
+        return encrypt(plaintext, key, iv, inRange, outRange);
     }
 
-        private BigInteger encrypt(BigInteger plaintext, byte[] key, byte[] iv,
+    private BigInteger encrypt(BigInteger plaintext, byte[] key, byte[] iv,
                                @NotNull Range inRange, @NotNull Range outRange) throws Exception {
         BigInteger inSize = inRange.size();
         BigInteger outSize = outRange.size();
@@ -97,10 +105,12 @@ public class BoldyrevaCipher implements OPECipher {
         }
     }
 
+    @Override
     public BigInteger decrypted(BigInteger chipertext, byte[] key) throws Exception {
         return decrypted(chipertext, key, new byte[getBlockSize()]);
     }
 
+    @Override
     public BigInteger decrypted(BigInteger chipertext, byte[] key, byte[] iv) throws Exception {
         if (!outRange.contains(chipertext)) {
             throw new RuntimeException(chipertext + " out of range: " + outRange);

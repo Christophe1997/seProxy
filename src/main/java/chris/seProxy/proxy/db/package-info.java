@@ -1,4 +1,4 @@
 /**
  * Database abstraction
  */
-package chris.seProxy.db;
+package chris.seProxy.proxy.db;

@@ -1,8 +1,8 @@
 package chris.seProxy.proxy;
 
-import chris.seProxy.db.Column;
-import chris.seProxy.db.Database;
-import chris.seProxy.db.Table;
+import chris.seProxy.proxy.db.Column;
+import chris.seProxy.proxy.db.Database;
+import chris.seProxy.proxy.db.Table;
 import chris.seProxy.proxy.agent.Agent;
 import chris.seProxy.proxy.agent.OPEAgent;
 import chris.seProxy.proxy.datasource.DataSourceManager;
@@ -22,7 +22,7 @@ public class Utils {
         return Optional.ofNullable(map.get(key));
     }
 
-    public static final String ALL_COLUMNS_FOR_CURRENT_DATABASE =
+    private static final String ALL_COLUMNS_FOR_CURRENT_DATABASE =
         "select * from information_schema.columns" +
                 " where table_schema = DATABASE() order by table_name, ordinal_position";
 
@@ -68,11 +68,11 @@ public class Utils {
         return new Database(dbName, tableMap);
     }
 
-    public static ResultSet selectCol(Agent agent, String tableName, String colName) {
+    public static ResultSet selectCol(@NotNull Agent agent, String tableName, String colName) {
         return agent.executeQuery(String.format("SELECT id, %s FROM %s", colName, tableName));
     }
 
-    public static void updateCol(Agent agent, String tableName, String colName, String id, String newVal) {
+    public static void updateColwithId(@NotNull Agent agent, String tableName, String colName, String id, String newVal) {
         agent.executeUpdate(String.format("UPDATE %s SET %s=%s WHERE id=%s",
                 tableName, colName, newVal, id));
     }

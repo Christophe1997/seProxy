@@ -57,7 +57,7 @@ public interface Middleware {
     void adjustLevel(String tableName, String colName, Level newLevel);
 
     /**
-     * Init database for scheme use
+     * Init database with specific scheme
      */
-    void initDataBase();
+    void initDatabase();
 }

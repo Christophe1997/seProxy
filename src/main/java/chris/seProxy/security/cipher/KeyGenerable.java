@@ -8,7 +8,7 @@ public interface KeyGenerable {
 
     int getBlockSize();
 
-    byte[] generateKey() throws Exception;
+    byte[] generateKey();
 
     Key toKey(byte[] key);
 
@@ -19,6 +19,7 @@ public interface KeyGenerable {
             rng.nextBytes(iv);
         } catch (NoSuchAlgorithmException ex) {
             ex.printStackTrace();
+            System.exit(1);
         }
         return iv;
     }
