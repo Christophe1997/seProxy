@@ -58,7 +58,7 @@ public interface SecurityScheme {
     @NotNull
     @Contract(pure = true)
     static String wrapQuote(@NotNull String s) {
-        return '"' + s + '"';
+        return "'" + s + "'";
     }
 
     @NotNull

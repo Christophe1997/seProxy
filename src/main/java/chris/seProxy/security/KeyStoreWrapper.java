@@ -36,13 +36,18 @@ public class KeyStoreWrapper {
     /**
      * init KeyStore wrapper from a {@link PropManager}
      */
-    public KeyStoreWrapper(PropManager propManager) throws Exception {
+    public KeyStoreWrapper(PropManager propManager) {
 
-        store = KeyStore.getInstance(TYPE, PROVIDER);
-        path = propManager.getKeyStorePath();
-        password = propManager.getKeyStorePassword().toCharArray();
-        protParm = new KeyStore.PasswordProtection(password);
-        load();
+        try {
+            store = KeyStore.getInstance(TYPE, PROVIDER);
+            path = propManager.getKeyStorePath();
+            password = propManager.getKeyStorePassword().toCharArray();
+            protParm = new KeyStore.PasswordProtection(password);
+            load();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(1);
+        }
 
     }
 

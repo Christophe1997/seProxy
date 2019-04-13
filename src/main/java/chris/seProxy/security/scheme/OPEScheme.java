@@ -1,8 +1,6 @@
 package chris.seProxy.security.scheme;
 
-import chris.seProxy.proxy.agent.OPEAgent;
-import chris.seProxy.proxy.datasource.DataSourceManager;
-import chris.seProxy.proxy.datasource.MysqlDataSourceManager;
+import chris.seProxy.proxy.datasource.OPEDatasourceManager;
 import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.security.Block.Mode;
@@ -34,15 +32,14 @@ public class OPEScheme extends BaseScheme {
 
     private OPECipher opeCipher;
 
-    public OPEScheme(PropManager propManager) throws Exception {
+    public OPEScheme(PropManager propManager) {
         randomCipher = new AESCipher(Mode.CBC, Padding.PKCS5);
         determineCipher = new AESCipher(Mode.ECB, Padding.PKCS5);
         opeCipher = new BoldyrevaCipher();
 
-        DataSourceManager mysqlManager = new MysqlDataSourceManager(propManager);
-        OPEAgent agent = new OPEAgent(mysqlManager);
+        OPEDatasourceManager manage = new OPEDatasourceManager(propManager);
         KeyStoreWrapper keyStoreWrapper = new KeyStoreWrapper(propManager);
-        middleware = new OPEMiddleware(agent, keyStoreWrapper, randomCipher, determineCipher, opeCipher);
+        middleware = new OPEMiddleware(manage, keyStoreWrapper, randomCipher, determineCipher, opeCipher);
         if (!propManager.isInit()) {
             middleware.initDatabase();
         }

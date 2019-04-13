@@ -51,6 +51,6 @@ public class PropManager {
         databasePassword = (String) prop.get("DB_PASSWORD");
         keyStorePath = (String) prop.get("KEYSTORE_PATH");
         keyStorePassword = (String) prop.get("KEYSTORE_PASSWORD");
-        isInit = (boolean) prop.get("IS_DB_INIT");
+        isInit = Boolean.valueOf((String) prop.get("IS_DB_INIT"));
     }
 }

@@ -1,14 +1,14 @@
 package chris.seProxy.proxy.middleware;
 
+import chris.seProxy.proxy.Utils;
+import chris.seProxy.proxy.datasource.OPEDatasourceManager;
 import chris.seProxy.proxy.db.Column;
 import chris.seProxy.proxy.db.Database;
-import chris.seProxy.proxy.Utils;
-import chris.seProxy.proxy.agent.OPEAgent;
 import chris.seProxy.proxy.db.Table;
 import chris.seProxy.security.Block.Mode;
 import chris.seProxy.security.Block.Padding;
-import chris.seProxy.security.Level;
 import chris.seProxy.security.KeyStoreWrapper;
+import chris.seProxy.security.Level;
 import chris.seProxy.security.cipher.IvCipher;
 import chris.seProxy.security.cipher.OPECipher;
 import chris.seProxy.security.cipher.ciphers.AESCipher;
@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.security.KeyStore;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class OPEMiddleware implements Middleware {
     private HashMap<String, List<String>> tables;
     private HashMap<String, HashMap<String, String>> ivs;
     private KeyStoreWrapper keyStoreWrapper;
-    private OPEAgent agent;
+    private OPEDatasourceManager manager;
     private IvCipher randomCipher;
     private IvCipher determineCipher;
     private OPECipher opeCipher;
@@ -38,16 +39,16 @@ public class OPEMiddleware implements Middleware {
 
 
     // SQL statement
-    private static final String SELECT_CONFIG = "SELECT config.table, config.column, config.iv, config.level FROM config";
+    private static final String SELECT_CONFIG = "SELECT config.tableName, config.columnName, config.iv, config.level FROM config";
     private static final String CREATE_CONFIG = "CREATE TABLE IF NOT EXISTS config (" +
-            "table VARCHAR(300) NOT NULL, " +
-            "column VARCHAR(300) NOT NULL, " +
+            "tableName VARCHAR(300) NOT NULL, " +
+            "columnName VARCHAR(300) NOT NULL, " +
             "iv VARCHAR(300) NOT NULL, " +
-            "level VARCHAR(300) NOT NULL) EGINE=INNODB";
+            "level VARCHAR(300) NOT NULL) ENGINE=INNODB";
 
-    public OPEMiddleware(OPEAgent agent, KeyStoreWrapper wrapper,
+    public OPEMiddleware(OPEDatasourceManager manager, KeyStoreWrapper wrapper,
                          IvCipher randomCipher, IvCipher determineCipher, OPECipher opeCipher) {
-        this.agent = agent;
+        this.manager = manager;
         keyStoreWrapper = wrapper;
         this.randomCipher = randomCipher;
         this.determineCipher = determineCipher;
@@ -128,7 +129,7 @@ public class OPEMiddleware implements Middleware {
     @Override
     public void initDatabase() {
         createConfigTable();
-        Database database = agent.getDatabase();
+        Database database = manager.getDatabase();
         IvCipher randomCipher = new AESCipher(Mode.CBC, Padding.PKCS5);
         OPECipher opeCipher = new BoldyrevaCipher();
         database.getTables().forEach(table -> {
@@ -136,15 +137,15 @@ public class OPEMiddleware implements Middleware {
             List<String> ivs = new ArrayList<>();
             List<List<String>> cols = new ArrayList<>();
             table.getColumns().forEach(column -> {
-
                 // create table
                 List<String> col = new ArrayList<>();
                 col.add(column.getColumnName());
                 if (column.isVarchar()) {
                     String iv = base64Encode(randomCipher.generateIv());
                     ivs.add(iv);
-                    agent.executeUpdate(String.format("INSERT INTO config VALUES (%s, %s, %s, %s)",
-                            table.getTableName(), column.getColumnName(), iv, Level.RANDOM));
+                    manager.executeUpdate(String.format("INSERT INTO config VALUES (%s, %s, %s, %s)",
+                            wrapQuote(table.getTableName()), wrapQuote(column.getColumnName()),
+                            wrapQuote(iv), wrapQuote(Level.RANDOM.toString())));
                     try {
                         keyStoreWrapper.set(toKeyAlias(table.getTableName(), column.getColumnName(), Level.RANDOM),
                                 (SecretKey) randomCipher.toKey(randomCipher.generateKey()));
@@ -156,8 +157,9 @@ public class OPEMiddleware implements Middleware {
                 } else if (column.isInt()) {
                     String iv = base64Encode(opeCipher.generateIv());
                     ivs.add(iv);
-                    agent.executeUpdate(String.format("INSERT INTO config VALUES (%s, %s, %s, %s)",
-                            table.getTableName(), column.getColumnName(), iv, Level.ORDER));
+                    manager.executeUpdate(String.format("INSERT INTO config VALUES (%s, %s, %s, %s)",
+                            wrapQuote(table.getTableName()), wrapQuote(column.getColumnName()),
+                            wrapQuote(iv), wrapQuote(Level.ORDER.toString())));
                     try {
                         keyStoreWrapper.set(toKeyAlias(table.getTableName(), column.getColumnName(), Level.ORDER),
                                 (SecretKey) opeCipher.toKey(opeCipher.generateKey()));
@@ -171,156 +173,165 @@ public class OPEMiddleware implements Middleware {
                 }
                 cols.add(col);
             });
-            String createSql = "CREATE TABLE IF NOT EXISTS " + table.getTableName() + "_E(id INT AUTO_INCREMENT, " +
+            String createSql = "CREATE TABLE IF NOT EXISTS " + table.getTableName() + "_E(id_E INT AUTO_INCREMENT, " +
                     cols.stream()
                             .map(col -> String.join(" ", col))
                             .collect(Collectors.joining(", ")) +
-                    ") EGINE=INNODB";
-            agent.executeUpdate(createSql);
+                    ", PRIMARY KEY(id_E)) ENGINE=INNODB";
+            manager.executeUpdate(createSql);
 
             // insert values
-            ResultSet rs = agent.executeQuery(String.format("SELECT * FROM %s", table.getTableName()));
             List<List<String>> vals = new ArrayList<>();
-            try {
-                while (rs.next()) {
-                    List<String> val = new ArrayList<>();
-                    for (int i = 0; i < colNum; i++) {
-                        String plainText = rs.getString(i);
-                        byte[] iv = base64Decode(ivs.get(i));
-                        table.getColumn(i).ifPresent(column -> {
-                            if (column.isVarchar()) {
-                                keyStoreWrapper.get(toKeyAlias(table.getTableName(),
-                                        column.getColumnName(), Level.RANDOM)).ifPresent(entry -> {
-                                    byte[] key = ((SecretKey) entry).getEncoded();
-                                    try {
-                                        String encryptedVal = base64Encode(
-                                                randomCipher.encrypt(plainText.getBytes(), key, iv));
-                                        val.add(encryptedVal);
-                                    } catch (Exception ex) {
-                                        ex.printStackTrace();
-                                        System.exit(1);
-                                    }
-                                });
-                            } else if (column.isInt()) {
-                                keyStoreWrapper.get(toKeyAlias(table.getTableName(),
-                                        column.getColumnName(), Level.ORDER)).ifPresent(entry -> {
-                                    byte[] key = ((SecretKey) entry).getEncoded();
-                                    try {
-                                        String encryptedVal = opeCipher.encrypt(
-                                                new BigInteger(plainText), key, iv).toString();
-                                        val.add(encryptedVal);
-                                    } catch (Exception ex) {
-                                        ex.printStackTrace();
-                                        System.exit(1);
-                                    }
-                                });
-                            } else {
-                                throw new RuntimeException("Cannot handle more datatype as: " + column.getColumnType());
-                            }
-                        });
+            manager.getConnection().ifPresent(conn -> {
+                try (Statement stmt = conn.createStatement()) {
+                    ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM %s", table.getTableName()));
+                    while (rs.next()) {
+                        List<String> val = new ArrayList<>();
+                        for (int i = 1; i <= colNum; i++) {
+                            String plainText = rs.getString(i);
+                            byte[] iv = base64Decode(ivs.get(i - 1));
+                            table.getColumn(i - 1).ifPresent(column -> {
+                                if (column.isVarchar()) {
+                                    keyStoreWrapper.get(toKeyAlias(table.getTableName(),
+                                            column.getColumnName(), Level.RANDOM)).ifPresent(entry -> {
+                                        byte[] key = ((KeyStore.SecretKeyEntry) entry).getSecretKey().getEncoded();
+                                        try {
+                                            String encryptedVal = base64Encode(
+                                                    randomCipher.encrypt(plainText.getBytes(), key, iv));
+                                            val.add(wrapQuote(encryptedVal));
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                            System.exit(1);
+                                        }
+                                    });
+                                } else if (column.isInt()) {
+                                    keyStoreWrapper.get(toKeyAlias(table.getTableName(),
+                                            column.getColumnName(), Level.ORDER)).ifPresent(entry -> {
+                                        byte[] key = ((KeyStore.SecretKeyEntry) entry).getSecretKey().getEncoded();
+                                        try {
+                                            String encryptedVal = opeCipher.encrypt(
+                                                    new BigInteger(plainText), key, iv).toString();
+                                            val.add(encryptedVal);
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                            System.exit(1);
+                                        }
+                                    });
+                                } else {
+                                    throw new RuntimeException("Cannot handle more datatype as: " + column.getColumnType());
+                                }
+                            });
+                        }
+                        vals.add(val);
                     }
-                    vals.add(val);
+                } catch (SQLException ex) {
+                    manager.printSQLException(ex);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
                 }
-            } catch (SQLException ex) {
-                agent.printSQLException(ex);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                System.exit(1);
-            }
 
-            String insertSql = "INSERT INTO %s_E VALUES " +
-            vals.stream()
-                    .map(val -> "(" + String.join(", ", val) + ")")
-                    .collect(Collectors.joining(", "));
-            agent.executeUpdate(insertSql);
+                String insertSql = "INSERT INTO " + table.getTableName() + "_E(" +
+                        table.getColumns().stream().map(Column::getColumnName).collect(Collectors.joining(", "))
+                        + ") VALUES " +
+                        vals.stream()
+                                .map(val -> "(" + String.join(", ", val) + ")")
+                                .collect(Collectors.joining(", "));
+                manager.executeUpdate(insertSql);
+            });
         });
-
     }
 
     /**
      * Handle RANDOM -> EQUALITY, RANDOM -> ORDER
      */
     private void adjustRandomTo(Level newLevel, byte[] key, byte[] iv, String tableName, String colName) {
-        ResultSet rs = Utils.selectCol(agent, tableName, colName);
-        try {
-            while (rs.next()) {
-                String id = rs.getString(0);
-                String val = rs.getString(1);
-                byte[] decryptedVal = randomCipher.decrypt(base64Decode(val), key, iv);
-                switch (newLevel) {
-                    case EQUALITY:
-                        updateLevel(tableName, colName, Level.EQUALITY);
-                        byte[] newKey1 = determineCipher.generateKey();
-                        keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
-                                (SecretKey) determineCipher.toKey(newKey1));
-                        String newVal1 = base64Encode(determineCipher.encrypt(decryptedVal, newKey1, iv));
-                        Utils.updateColwithId(agent, tableName, colName, id, newVal1);
-                        break;
-                    case ORDER:
-                        updateLevel(tableName, colName, Level.ORDER);
-                        byte[] newKey2 = opeCipher.generateKey();
-                        keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
-                                (SecretKey) opeCipher.toKey(newKey2));
-                        BigInteger newVal2 = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), key, iv);
-                        Utils.updateColwithId(agent, tableName, colName, id, newVal2.toString());
-                        break;
-                    default:
-                        break;
+        manager.getConnection().ifPresent(conn -> {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("SELECT id_E, %s FROM %s", colName, tableName));
+                while (rs.next()) {
+                    String id = rs.getString(1);
+                    String val = rs.getString(2);
+                    byte[] decryptedVal = randomCipher.decrypt(base64Decode(val), key, iv);
+                    switch (newLevel) {
+                        case EQUALITY:
+                            updateLevel(tableName, colName, Level.EQUALITY);
+                            byte[] newKey1 = determineCipher.generateKey();
+                            keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
+                                    (SecretKey) determineCipher.toKey(newKey1));
+                            String newVal1 = base64Encode(determineCipher.encrypt(decryptedVal, newKey1, iv));
+                            updateColwithId(tableName, colName, id, newVal1);
+                            break;
+                        case ORDER:
+                            updateLevel(tableName, colName, Level.ORDER);
+                            byte[] newKey2 = opeCipher.generateKey();
+                            keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
+                                    (SecretKey) opeCipher.toKey(newKey2));
+                            BigInteger newVal2 = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), key, iv);
+                            updateColwithId(tableName, colName, id, newVal2.toString());
+                            break;
+                        default:
+                            break;
+                    }
                 }
+            } catch (SQLException ex) {
+                manager.printSQLException(ex);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.exit(1);
             }
-        } catch (SQLException ex) {
-            agent.printSQLException(ex);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
+        });
     }
 
     /**
      * Handle EQUALITY -> ORDER
      */
     private void adjustEqualityTo(Level newLevel, byte[] key, byte[] iv, String tableName, String colName) {
-        ResultSet rs = Utils.selectCol(agent, tableName, colName);
-        try {
-            while (rs.next()) {
-                String id = rs.getString(0);
-                String val = rs.getString(1);
-                byte[] decryptedVal = determineCipher.decrypt(base64Decode(val), key, iv);
-                if (newLevel == Level.ORDER) {
-                    byte[] newKey = opeCipher.generateKey();
-                    keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
-                            (SecretKey) opeCipher.toKey(newKey));
-                    BigInteger newVal = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), key, iv);
-                    Utils.updateColwithId(agent, tableName, colName, id, newVal.toString());
+        manager.getConnection().ifPresent(conn -> {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("SELECT id_E, %s FROM %s", colName, tableName));
+                while (rs.next()) {
+                    String id = rs.getString(1);
+                    String val = rs.getString(2);
+                    byte[] decryptedVal = determineCipher.decrypt(base64Decode(val), key, iv);
+                    if (newLevel == Level.ORDER) {
+                        byte[] newKey = opeCipher.generateKey();
+                        keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
+                                (SecretKey) opeCipher.toKey(newKey));
+                        BigInteger newVal = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), key, iv);
+                        updateColwithId(tableName, colName, id, newVal.toString());
+                    }
                 }
+            } catch (SQLException ex) {
+                manager.printSQLException(ex);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.exit(1);
             }
-        } catch (SQLException ex) {
-            agent.printSQLException(ex);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
+        });
     }
 
     private void initConfigTable() {
         configMap = new HashMap<>();
-        ResultSet rs = agent.executeQuery(SELECT_CONFIG);
-        try {
-            while (rs.next()) {
-                List<String> col = new ArrayList<>();
-                String tableName = rs.getString(0);
-                String colName = rs.getString(1);
-                String iv = rs.getString(2);
-                String level = rs.getString(3);
-                col.add(colName);
-                col.add(iv);
-                col.add(level);
-                configMap.put(tableName, col);
+        manager.getConnection().ifPresent(conn -> {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(SELECT_CONFIG);
+                while (rs.next()) {
+                    List<String> col = new ArrayList<>();
+                    String tableName = rs.getString(1);
+                    String colName = rs.getString(2);
+                    String iv = rs.getString(3);
+                    String level = rs.getString(4);
+                    col.add(colName);
+                    col.add(iv);
+                    col.add(level);
+                    configMap.put(tableName, col);
+                }
+            } catch (SQLException ex) {
+                manager.printSQLException(ex);
+                System.exit(1);
             }
-        } catch (SQLException ex) {
-            agent.printSQLException(ex);
-            System.exit(1);
-        }
+        });
     }
 
     private HashMap<String, HashMap<String, Level>> initLevelsInfo() {
@@ -335,7 +346,7 @@ public class OPEMiddleware implements Middleware {
     }
 
     private HashMap<String, List<String>> initTablesInfo() {
-        Database database = agent.getDatabase();
+        Database database = manager.getDatabase();
         HashMap<String, List<String>> tables = new HashMap<>();
         for (Table t : database.getTables()) {
             List<String> cols = new ArrayList<>();
@@ -366,8 +377,8 @@ public class OPEMiddleware implements Middleware {
      * @param level     column level
      */
     private void updateLevel(String tableName, String colName, Level level) {
-        String sql = String.format("UPDATE config set level=%s WHERE table=%s AND column=%s", level, tableName, colName);
-        agent.executeUpdate(sql);
+        String sql = String.format("UPDATE config set level=%s WHERE tableName=%s AND columnName=%s", level, tableName, colName);
+        manager.executeUpdate(sql);
     }
 
     /**
@@ -378,12 +389,17 @@ public class OPEMiddleware implements Middleware {
      * @param iv        initial vector
      */
     private void updateIv(String tableName, String colName, String iv) {
-        String sql = String.format("UPDATE config set iv=%s WHERE table=%s AND column=%s", iv, tableName, colName);
-        agent.executeUpdate(sql);
+        String sql = String.format("UPDATE config set iv=%s WHERE tableName=%s AND columnName=%s", iv, tableName, colName);
+        manager.executeUpdate(sql);
+    }
+
+    private void updateColwithId(String tableName, String colName, String id, String newVal) {
+        manager.executeUpdate(String.format("UPDATE %s SET %s=%s WHERE id=%s",
+                tableName, colName, newVal, id));
     }
 
     private void createConfigTable() {
-        agent.executeUpdate(CREATE_CONFIG);
+        manager.executeUpdate(CREATE_CONFIG);
     }
 
 }
