@@ -20,7 +20,10 @@ import java.security.KeyStore;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static chris.seProxy.security.scheme.SecurityScheme.*;
@@ -35,7 +38,7 @@ public class OPEMiddleware implements Middleware {
     private IvCipher determineCipher;
     private OPECipher opeCipher;
 
-    private HashMap<String, List<String>> configMap;
+    private List<List<String>> configs;
 
 
     // SQL statement
@@ -57,9 +60,8 @@ public class OPEMiddleware implements Middleware {
 
     public void init() {
         initConfigTable();
-        levels = initLevelsInfo();
-        tables = initTablesInfo();
-        ivs = initIvsInfo();
+        initLevelsAndIvsInfo();
+        initTablesInfo();
     }
 
     /**
@@ -248,31 +250,52 @@ public class OPEMiddleware implements Middleware {
     private void adjustRandomTo(Level newLevel, byte[] key, byte[] iv, String tableName, String colName) {
         manager.getConnection().ifPresent(conn -> {
             try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("SELECT id_E, %s FROM %s", colName, tableName));
-                while (rs.next()) {
-                    String id = rs.getString(1);
-                    String val = rs.getString(2);
-                    byte[] decryptedVal = randomCipher.decrypt(base64Decode(val), key, iv);
-                    switch (newLevel) {
-                        case EQUALITY:
-                            updateLevel(tableName, colName, Level.EQUALITY);
-                            byte[] newKey1 = determineCipher.generateKey();
-                            keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
+                ResultSet rs = stmt.executeQuery(String.format("SELECT id_E, %s FROM %s_E", colName, tableName));
+                switch (newLevel) {
+                    case EQUALITY:
+                        updateLevel(tableName, colName, Level.EQUALITY);
+                        String alias1 = toKeyAlias(tableName, colName, newLevel);
+                        byte[] newKey1;
+                        if (!keyStoreWrapper.get(alias1).isPresent()) {
+                            newKey1 = determineCipher.generateKey();
+                            keyStoreWrapper.set(alias1,
                                     (SecretKey) determineCipher.toKey(newKey1));
-                            String newVal1 = base64Encode(determineCipher.encrypt(decryptedVal, newKey1, iv));
+
+                        } else {
+                            newKey1 = ((KeyStore.SecretKeyEntry) keyStoreWrapper.get(alias1).get())
+                                    .getSecretKey().getEncoded();
+                        }
+                        while (rs.next()) {
+                            String id = rs.getString(1);
+                            String val = rs.getString(2);
+                            byte[] decryptedVal = randomCipher.decrypt(base64Decode(val), key, iv);
+                            String newVal1 = base64Encode(determineCipher.encrypt(decryptedVal, newKey1));
                             updateColwithId(tableName, colName, id, newVal1);
-                            break;
-                        case ORDER:
-                            updateLevel(tableName, colName, Level.ORDER);
-                            byte[] newKey2 = opeCipher.generateKey();
-                            keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
+                        }
+                        break;
+                    case ORDER:
+                        updateLevel(tableName, colName, Level.ORDER);
+                        String alias2 = toKeyAlias(tableName, colName, newLevel);
+                        byte[] newKey2;
+                        if (!keyStoreWrapper.get(alias2).isPresent()) {
+                            newKey2 = opeCipher.generateKey();
+                            keyStoreWrapper.set(alias2,
                                     (SecretKey) opeCipher.toKey(newKey2));
-                            BigInteger newVal2 = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), key, iv);
+                        } else {
+                            newKey2 = ((KeyStore.SecretKeyEntry) keyStoreWrapper.get(alias2).get())
+                                    .getSecretKey().getEncoded();
+                        }
+                        while (rs.next()) {
+                            String id = rs.getString(1);
+                            String val = rs.getString(2);
+                            byte[] decryptedVal = randomCipher.decrypt(base64Decode(val), key, iv);
+                            BigInteger newVal2 = opeCipher.encrypt(new BigInteger(new String(decryptedVal)),
+                                    newKey2, iv);
                             updateColwithId(tableName, colName, id, newVal2.toString());
-                            break;
-                        default:
-                            break;
-                    }
+                        }
+                        break;
+                    default:
+                        break;
                 }
             } catch (SQLException ex) {
                 manager.printSQLException(ex);
@@ -290,15 +313,23 @@ public class OPEMiddleware implements Middleware {
         manager.getConnection().ifPresent(conn -> {
             try (Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(String.format("SELECT id_E, %s FROM %s", colName, tableName));
-                while (rs.next()) {
-                    String id = rs.getString(1);
-                    String val = rs.getString(2);
-                    byte[] decryptedVal = determineCipher.decrypt(base64Decode(val), key, iv);
-                    if (newLevel == Level.ORDER) {
-                        byte[] newKey = opeCipher.generateKey();
-                        keyStoreWrapper.set(toKeyAlias(tableName, colName, newLevel),
+                if (newLevel == Level.ORDER) {
+                    updateLevel(tableName, colName, Level.ORDER);
+                    String alias = toKeyAlias(tableName, colName, newLevel);
+                    byte[] newKey;
+                    if (!keyStoreWrapper.get(alias).isPresent()) {
+                        newKey = opeCipher.generateKey();
+                        keyStoreWrapper.set(alias,
                                 (SecretKey) opeCipher.toKey(newKey));
-                        BigInteger newVal = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), key, iv);
+                    } else {
+                        newKey = ((KeyStore.SecretKeyEntry) keyStoreWrapper.get(alias).get())
+                                .getSecretKey().getEncoded();
+                    }
+                    while (rs.next()) {
+                        String id = rs.getString(1);
+                        String val = rs.getString(2);
+                        byte[] decryptedVal = determineCipher.decrypt(base64Decode(val), key, iv);
+                        BigInteger newVal = opeCipher.encrypt(new BigInteger(new String(decryptedVal)), newKey, iv);
                         updateColwithId(tableName, colName, id, newVal.toString());
                     }
                 }
@@ -312,20 +343,17 @@ public class OPEMiddleware implements Middleware {
     }
 
     private void initConfigTable() {
-        configMap = new HashMap<>();
+        configs = new ArrayList<>();
         manager.getConnection().ifPresent(conn -> {
             try (Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(SELECT_CONFIG);
                 while (rs.next()) {
                     List<String> col = new ArrayList<>();
-                    String tableName = rs.getString(1);
-                    String colName = rs.getString(2);
-                    String iv = rs.getString(3);
-                    String level = rs.getString(4);
-                    col.add(colName);
-                    col.add(iv);
-                    col.add(level);
-                    configMap.put(tableName, col);
+                    col.add(rs.getString(1));  // tableName
+                    col.add(rs.getString(2));  // colName
+                    col.add(rs.getString(3));  // iv
+                    col.add(rs.getString(4));  // level
+                    configs.add(col);
                 }
             } catch (SQLException ex) {
                 manager.printSQLException(ex);
@@ -334,20 +362,39 @@ public class OPEMiddleware implements Middleware {
         });
     }
 
-    private HashMap<String, HashMap<String, Level>> initLevelsInfo() {
-        HashMap<String, HashMap<String, Level>> levels = new HashMap<>();
-        for (Map.Entry<String, List<String>> e : configMap.entrySet()) {
-            HashMap<String, Level> val = new HashMap<>();
-            // 0 is column name, 2 is level
-            val.put(e.getValue().get(0), Level.valueOf(e.getValue().get(2)));
-            levels.put(e.getKey(), val);
-        }
-        return levels;
+    private void initLevelsAndIvsInfo() {
+        levels = new HashMap<>();
+        ivs = new HashMap<>();
+        configs.forEach(row -> {
+            String tableName = row.get(0);
+            String colName = row.get(1);
+            String iv = row.get(2);
+            String level = row.get(3);
+            if (ivs.get(tableName) == null) {
+                ivs.put(tableName, new HashMap<String, String>(){{
+                    put(colName, iv);
+                }});
+            } else {
+                HashMap<String, String> map = ivs.get(tableName);
+                map.put(colName, iv);
+                ivs.put(tableName, map);
+            }
+
+            if (levels.get(tableName) == null) {
+                levels.put(tableName, new HashMap<String, Level>(){{
+                    put(colName, Level.valueOf(level));
+                }});
+            } else {
+                HashMap<String, Level> map = levels.get(tableName);
+                map.put(colName, Level.valueOf(level));
+                levels.put(tableName, map);
+            }
+        });
     }
 
-    private HashMap<String, List<String>> initTablesInfo() {
+    private void initTablesInfo() {
         Database database = manager.getDatabase();
-        HashMap<String, List<String>> tables = new HashMap<>();
+        tables = new HashMap<>();
         for (Table t : database.getTables()) {
             List<String> cols = new ArrayList<>();
             for (Column c : t.getColumns()) {
@@ -355,18 +402,6 @@ public class OPEMiddleware implements Middleware {
             }
             tables.put(t.getTableName(), cols);
         }
-        return tables;
-    }
-
-    private HashMap<String, HashMap<String, String>> initIvsInfo() {
-        HashMap<String, HashMap<String, String>> ivs = new HashMap<>();
-        for (Map.Entry<String, List<String>> e : configMap.entrySet()) {
-            HashMap<String, String> val = new HashMap<>();
-            // 1 is iv
-            val.put(e.getValue().get(0), e.getValue().get(1));
-            ivs.put(e.getKey(), val);
-        }
-        return ivs;
     }
 
     /**
@@ -377,7 +412,9 @@ public class OPEMiddleware implements Middleware {
      * @param level     column level
      */
     private void updateLevel(String tableName, String colName, Level level) {
-        String sql = String.format("UPDATE config set level=%s WHERE tableName=%s AND columnName=%s", level, tableName, colName);
+        String sql = String.format("UPDATE config set level=%s WHERE tableName=%s AND columnName=%s",
+                wrapQuote(level.toString()), wrapQuote(tableName), wrapQuote(colName));
+        levels.get(tableName).put(colName, level);
         manager.executeUpdate(sql);
     }
 
@@ -389,13 +426,15 @@ public class OPEMiddleware implements Middleware {
      * @param iv        initial vector
      */
     private void updateIv(String tableName, String colName, String iv) {
-        String sql = String.format("UPDATE config set iv=%s WHERE tableName=%s AND columnName=%s", iv, tableName, colName);
+        String sql = String.format("UPDATE config set iv=%s WHERE tableName=%s AND columnName=%s",
+                wrapQuote(iv), wrapQuote(tableName), wrapQuote(colName));
+        ivs.get(tableName).put(colName, iv);
         manager.executeUpdate(sql);
     }
 
     private void updateColwithId(String tableName, String colName, String id, String newVal) {
-        manager.executeUpdate(String.format("UPDATE %s SET %s=%s WHERE id=%s",
-                tableName, colName, newVal, id));
+        manager.executeUpdate(String.format("UPDATE %s_E SET %s=%s WHERE id_E=%s",
+                tableName, colName, wrapQuote(newVal), id));
     }
 
     private void createConfigTable() {

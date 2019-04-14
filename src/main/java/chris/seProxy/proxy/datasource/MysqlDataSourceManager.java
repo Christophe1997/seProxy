@@ -1,18 +1,14 @@
 package chris.seProxy.proxy.datasource;
 
-import chris.seProxy.proxy.db.Column;
-import chris.seProxy.proxy.db.Database;
-import chris.seProxy.proxy.db.Table;
 import chris.seProxy.util.PropManager;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * MySql DataSource
