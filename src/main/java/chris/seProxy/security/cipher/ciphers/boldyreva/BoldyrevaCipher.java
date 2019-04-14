@@ -143,7 +143,7 @@ public class BoldyrevaCipher implements OPECipher {
 
         if (chipertext.compareTo(mid) <= 0) {
             return decrypted(chipertext, key, iv,
-                    new Range(x.add(BigInteger.ONE), x),
+                    new Range(inEdge.add(BigInteger.ONE), x),
                     new Range(outEdge.add(BigInteger.ONE), mid));
         } else {
             return decrypted(chipertext, key, iv,

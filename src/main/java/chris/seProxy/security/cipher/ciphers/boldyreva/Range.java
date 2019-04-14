@@ -21,7 +21,7 @@ public class Range {
 
     public Range(@NotNull BigInteger min, @NotNull BigInteger max) {
         if (min.compareTo(max) > 0) {
-            throw new RuntimeException(min + "should be smaller than " + max);
+            throw new RuntimeException(min + " should be smaller than " + max);
         } else {
             this.min = min;
             this.max = max;
