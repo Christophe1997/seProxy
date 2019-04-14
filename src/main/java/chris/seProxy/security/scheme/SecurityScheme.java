@@ -5,6 +5,7 @@ import chris.seProxy.rewriter.context.Context;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.ResultSetMetaData;
 import java.util.Base64;
 
 /**
@@ -13,6 +14,8 @@ import java.util.Base64;
 public interface SecurityScheme {
 
     String encrypt(Context context, String val);
+
+    String decrypt(String tableName, String colName, String val);
 
     /**
      * Middleware that control the db

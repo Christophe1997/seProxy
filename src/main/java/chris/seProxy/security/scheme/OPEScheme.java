@@ -1,6 +1,7 @@
 package chris.seProxy.security.scheme;
 
 import chris.seProxy.proxy.datasource.OPEDatasourceManager;
+import chris.seProxy.proxy.middleware.Middleware;
 import chris.seProxy.proxy.middleware.OPEMiddleware;
 import chris.seProxy.rewriter.context.Context;
 import chris.seProxy.security.Block.Mode;
@@ -55,27 +56,63 @@ public class OPEScheme extends BaseScheme {
 //        return colName + "_" + level;
 //    }
 
+
+    @Override
+    public Middleware middleware() {
+        return middleware;
+    }
+
     @Override
     public String encrypt(Context context, String val) {
         if (val.toUpperCase().equals("NULL")) return val;
+
         StringBuilder builder = new StringBuilder();
         context.getCurrentTable().ifPresent(tableName ->
                 context.getCurrentCol().ifPresent(colName ->
-                        context.getCurrentLevel().ifPresent(minProperty ->
-                                middleware.getSpecificLevel(tableName, colName).ifPresent(curProperty -> {
-                                    if (minProperty.compareTo(curProperty) < 0) {
-                                        byte[] key = middleware.getSpecificKey(tableName, colName, curProperty);
-                                        byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, curProperty)
+                        context.getCurrentLevel().ifPresent(minLevel ->
+                                middleware.getSpecificLevel(tableName, colName).ifPresent(curLevel -> {
+                                    if (minLevel.compareTo(curLevel) <= 0) {
+                                        byte[] key = middleware.getSpecificKey(tableName, colName, curLevel);
+                                        byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, curLevel)
                                                 .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
-                                        builder.append(dispatchEncrypt(val, curProperty, key, iv));
+                                        builder.append(dispatchEncrypt(val, curLevel, key, iv));
                                     } else {
-                                        middleware.adjustLevel(tableName, colName, minProperty);
-                                        byte[] key = middleware.getSpecificKey(tableName, colName, minProperty);
-                                        byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, minProperty)
+                                        middleware.adjustLevel(tableName, colName, minLevel);
+                                        byte[] key = middleware.getSpecificKey(tableName, colName, minLevel);
+                                        byte[] iv = base64Decode(middleware.getSpecificIv(tableName, colName, minLevel)
                                                 .orElseThrow(() -> new RuntimeException("This scheme require a initial vector")));
-                                        builder.append(dispatchEncrypt(val, minProperty, key, iv));
+                                        builder.append(dispatchEncrypt(val, minLevel, key, iv));
                                     }
                                 }))));
+        return builder.toString();
+    }
+
+    @Override
+    public String decrypt(String tableName, String colName, String val) {
+        StringBuilder builder = new StringBuilder();
+        middleware.getSpecificLevel(tableName, colName).ifPresent(level ->
+                middleware.getSpecificIv(tableName, colName, level).ifPresent(iv -> {
+                    byte[] key = middleware.getSpecificKey(tableName, colName, level);
+                    try {
+                        switch (level) {
+                            case RANDOM:
+                                builder.append(new String(randomCipher.decrypt(base64Decode(val),
+                                        key, base64Decode(iv))));
+                                break;
+                            case EQUALITY:
+                                builder.append(new String(determineCipher.decrypt(base64Decode(val), key)));
+                                break;
+                            case ORDER:
+                                builder.append(opeCipher.decrypted(new BigInteger(val), key, base64Decode(iv)));
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.exit(1);
+                    }
+                }));
         return builder.toString();
     }
 
@@ -86,9 +123,9 @@ public class OPEScheme extends BaseScheme {
                 case RANDOM:
                     return encodeAndWrap(randomCipher.encrypt(plaintext, key, iv));
                 case EQUALITY:
-                    return encodeAndWrap(determineCipher.encrypt(plaintext, key, iv));
+                    return encodeAndWrap(determineCipher.encrypt(plaintext, key));
                 case ORDER:
-                    return opeCipher.encrypt(new BigInteger(val), key).toString();
+                    return opeCipher.encrypt(new BigInteger(val), key, iv).toString();
                 default:
                     return val;
             }
