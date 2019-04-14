@@ -46,6 +46,7 @@ public class RewriterListener extends MySqlParserBaseListener {
     @Override
     public void enterInsertStatement(MySqlParser.InsertStatementContext ctx) {
         context.setCurrentTable(ctx.tableName().getText());
+        context.setCurrentLevel(Level.RANDOM);
         List<String> cols;
         if (ctx.columns != null) {
             cols = ctx.columns.uid().stream().map(RuleContext::getText).collect(Collectors.toList());
@@ -53,7 +54,6 @@ public class RewriterListener extends MySqlParserBaseListener {
             cols = scheme.middleware().getColsFromTable(
                     context.getCurrentTable().orElseThrow(() -> new RewriteFailure("no table on stack.")))
                     .orElseThrow(() -> new RewriteFailure("cols not found"));
-
         }
 
         context.setInsertStatementContext(new InsertStatementContext(cols));
@@ -94,6 +94,7 @@ public class RewriterListener extends MySqlParserBaseListener {
             }
             String curCol = ctx.dottedId(0).getText().substring(1);
             context.setCurrentCol(curCol);
+            rewriter.replace(ctx.uid().getStart(), ctx.uid().getStop(), ctx.uid().getText() + "_E");
 //            rewriter.replace(ctx.dottedId(0).getStart(), ctx.dottedId(1).getStop(),
 //                    scheme.rewriteCol(context, curCol));
         } else {
@@ -289,4 +290,8 @@ public class RewriterListener extends MySqlParserBaseListener {
                 scheme.encrypt(context, ctx.getText()));
     }
 
+    @Override
+    public void enterTableName(MySqlParser.TableNameContext ctx) {
+        rewriter.replace(ctx.getStart(), ctx.getStop(), ctx.getText() + "_E");
+    }
 }

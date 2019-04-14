@@ -4,4 +4,4 @@ DB_UNAME=root
 DB_PASSWORD=12345
 KEYSTORE_PATH=/home/christophe/keystore
 KEYSTORE_PASSWORD=security
-IS_DB_INIT=false
+IS_DB_INIT=true
