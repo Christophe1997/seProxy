@@ -50,9 +50,4 @@ public class SecurityTest {
         System.out.println(cipher.encrypt(BigInteger.valueOf(65), "key".getBytes()));
     }
 
-
-    @Test
-    public void OPESchemeTestShouldPass() throws Exception {
-        System.out.println(Level.RANDOM.compareTo(Level.LIKE));
-    }
 }

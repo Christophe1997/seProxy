@@ -25,37 +25,37 @@ class Interpreter {
     }
 
     void interpret(String s) {
-            rewriter.rewrite(s).ifPresent(rewriteSql ->
-                    manager.getConnection().ifPresent(conn -> {
-                try (Statement stmt = conn.createStatement()) {
-                    if (stmt.execute(rewriteSql)) {
-                        List<List<String>> table = new ArrayList<>();
-                        log.info("execute query: " + rewriteSql);
-                        ResultSet rs = stmt.getResultSet();
-                        ResultSetMetaData rsmd = rs.getMetaData();
-                        int colNum = rsmd.getColumnCount();
-                        while (rs.next()) {
-                            List<String> row = new ArrayList<>();
-                            for (int i = 1; i <= colNum; i++) {
-                                String val = rs.getString(i);
-                                row.add(scheme.decrypt(rsmd.getTableName(i).replace("_E", ""),
-                                        rsmd.getColumnName(i), val));
+        rewriter.rewrite(s).ifPresent(rewriteSql ->
+                manager.getConnection().ifPresent(conn -> {
+                    try (Statement stmt = conn.createStatement()) {
+                        if (stmt.execute(rewriteSql)) {
+                            List<List<String>> table = new ArrayList<>();
+                            log.info("execute query: " + rewriteSql);
+                            ResultSet rs = stmt.getResultSet();
+                            ResultSetMetaData rsmd = rs.getMetaData();
+                            int colNum = rsmd.getColumnCount();
+                            while (rs.next()) {
+                                List<String> row = new ArrayList<>();
+                                for (int i = 1; i <= colNum; i++) {
+                                    String val = rs.getString(i);
+                                    row.add(scheme.decrypt(rsmd.getTableName(i).replace("_E", ""),
+                                            rsmd.getColumnName(i), val));
+                                }
+                                table.add(row);
                             }
-                            table.add(row);
+                            printQuery(table);
+                        } else {
+                            printUpdate(stmt.getUpdateCount());
                         }
-                        printQuery(table);
-                    } else {
-                        printUpdate(stmt.getUpdateCount());
+                    } catch (SQLException ex) {
+                        manager.printSQLException(ex);
                     }
-                } catch (SQLException ex) {
-                    manager.printSQLException(ex);
-                }
-            }));
+                }));
     }
 
     private void printQuery(List<List<String>> table) {
         table.stream()
-                .map(row -> String.join(" ", row))
+                .map(row -> String.join("|", row))
                 .forEach(System.out::println);
         System.out.println(table.size() + " rows in set");
     }
@@ -63,4 +63,5 @@ class Interpreter {
     private void printUpdate(int count) {
         System.out.println("Query OK, " + count + " rows affected");
     }
+
 }
