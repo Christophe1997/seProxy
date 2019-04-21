@@ -1,9 +1,5 @@
 package chris.seProxy;
 
-import chris.seProxy.parser.ParserWrapper;
-import chris.seProxy.parser.mysql.MySqlLexer;
-import chris.seProxy.parser.mysql.MySqlParser;
-import chris.seProxy.proxy.datasource.MysqlDataSourceManager;
 import chris.seProxy.proxy.datasource.OPEDatasourceManager;
 import chris.seProxy.rewriter.Rewriter;
 import chris.seProxy.rewriter.mysql.MysqlRewriter;
