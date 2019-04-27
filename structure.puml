@@ -1,0 +1,81 @@
+@startuml
+
+package seProxy.parser <<Frame>> {
+    class ParserWrapper {
+        init();
+        getParser();
+    }
+}
+
+package seProxy.rewriter <<Frame>> {
+    interface Rewriter {
+        rewrite();
+    }
+}
+
+package seProxy.security <<Frame>> {
+
+    package seProxy.security.cipher <<Frame>> {
+        interface KeyGenerable {
+            getBlockSize();
+            generateKey();
+            toKey();
+            generateIv();
+        }
+
+        interface SimpleCipher {
+            byte[] encrypt(plaintext, key);
+            byte[] decrypt(ciphertext, key);
+        }
+
+        interface IvCipher {
+            byte[] encrypt(plaintext, key, iv);
+            byte[] decrypt(ciphertext, key, iv);
+        }
+
+        interface OPECipher {
+            BigInteger encrypt(plaintext, key);
+            BigInteger decrypt(ciphertext, key);
+            BigInteger encrypt(plaintext, key, iv);
+            BigInteger decrypt(ciphertext, key, iv);
+        }
+        KeyGenerable <|-- SimpleCipher
+        KeyGenerable <|-- OPECipher
+        SimpleCipher <|-- IvCipher
+    }
+
+    interface SecurityScheme {
+        encrypt();
+        decrypt();
+        middleware();
+    }
+
+    SecurityScheme o-- seProxy.security.cipher
+}
+
+package seProxy.proxy <<Frame>> {
+    interface Middleware {
+        getColsFromTable();
+        getSpecificLevel();
+        getSpecificIv();
+        getSpecificKey();
+        adjustLevel();
+        initDatabase();
+    }
+
+    interface DataSourceManager {
+        executeUpdate();
+        getConnection();
+        printSQLException();
+        printSQLWarnings();
+    }
+
+    Middleware o-- DataSourceManager
+}
+
+SecurityScheme o-- Middleware
+Middleware o-- seProxy.security.cipher
+Rewriter o-- SecurityScheme
+Rewriter o-- ParserWrapper
+
+@enduml
